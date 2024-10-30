@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String @db.VarChar(100)
+  password String @db.VarChar(100)
+  username String @unique @db.VarChar(45)
+  email    String @unique @db.VarChar(45)
+  role     Role   @default(VIEWER)
+}
+
+model Citizen {
+  id      String    @id @default(uuid())
+  name    String    @db.VarChar(100)
+  Student Student[]
+}
+
+model VisaType {
+  id    String @id @default(uuid())
+  name  String @db.VarChar(100)
+  visas Visa[]
+}
+
+model Consultant {
+  id          String @id @default(uuid())
+  name        String @db.VarChar(45)
+  phoneNumber String @db.VarChar(45)
+
+  Student Student[]
+}
+
+model Visa {
+  id         String   @id @default(uuid())
+  visaSeries String   @db.VarChar(45)
+  visaNumber String   @db.VarChar(45)
+  visaStart  DateTime
+  visaEnd    DateTime
+  visaType   VisaType @relation(fields: [visaTypeId], references: [id])
+  visaTypeId String
+  student    Student  @relation(fields: [studentsId], references: [id])
+  studentsId String
+}
+
+model Registration {
+  id                  String   @id @default(uuid())
+  registrationSeries  String   @db.VarChar(45)
+  registrationNumber  String   @db.VarChar(45)
+  registrationAddress String   @db.VarChar(200)
+  registrationStart   DateTime
+  registrationEnd     DateTime
+  student             Student  @relation(fields: [studentsId], references: [id])
+  studentsId          String
+}
+
+model Student {
+  id          String @id @default(uuid())
+  phoneNumber String @db.VarChar(45)
+  firstName   String @db.VarChar(45)
+  lastName    String @unique @db.VarChar(45)
+  middleName  String @unique @db.VarChar(45)
+
+  passportSeries  String         @unique @db.VarChar(20)
+  passportNumber  String         @unique @db.VarChar(20)
+  passportExpired DateTime
+  pinfl           String         @unique @db.VarChar(20)
+  visas           Visa[]
+  registrations   Registration[]
+
+  consultant   Consultant @relation(fields: [consultantId], references: [id])
+  consultantId String
+
+  citizen   Citizen @relation(fields: [citizenId], references: [id])
+  citizenId String
+}
+
+model Settings {
+  id               String   @id @default(uuid())
+  visaTime         DateTime
+  registrationTime DateTime
+}
