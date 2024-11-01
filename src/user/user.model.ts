@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { Role } from "src/authentication/role.enum";
 
 
 export class User implements Prisma.UserCreateInput {
@@ -6,4 +7,5 @@ export class User implements Prisma.UserCreateInput {
     name: string;
     username: string;
     email: string;
+    role: Role;
 }

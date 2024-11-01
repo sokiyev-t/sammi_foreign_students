@@ -6,6 +6,7 @@ import { LoginDto } from "./dto/login-user.dto";
 import * as bcrypt from 'bcrypt';
 import { RegisterUsersDto } from "./dto/register-user.dto";
 import { User } from "src/user/user.model";
+import { Role } from "./role.enum";
 
 @Injectable()
 export class AuthService {
@@ -46,11 +47,26 @@ export class AuthService {
         createUser.email = createDto.email;
         createUser.username = createDto.username;
         createUser.password = await bcrypt.hash(createDto.password, 10);
+        createUser.role = createDto.role;
 
         const user = await this.usersService.createUser(createUser);
 
         return {
-            token: this.jwtService.sign({ username: user.username }),
+            token: this.jwtService.sign({ username: user.username, role: user.role }),
+        };
+    }
+    async addAdmin(createDto: RegisterUsersDto): Promise<any> {
+        const createUser = new User();
+        createUser.name = "admin";
+        createUser.email = createDto.email;
+        createUser.username = createDto.username;
+        createUser.password = await bcrypt.hash(createDto.password, 10);
+        createUser.role = Role.ADMIN;
+
+        const user = await this.usersService.createUser(createUser);
+
+        return {
+            token: this.jwtService.sign({ username: user.username, role: user.role }),
         };
     }
 

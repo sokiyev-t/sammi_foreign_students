@@ -8,12 +8,12 @@ export class UserService {
 
     constructor(private prisma: PrismaService) { }
 
-    async getAllUser(): Promise<User[]> {
+    async getAllUser() {
         return this.prisma.user.findMany()
     }
 
 
-    async createUser(data: User): Promise<User> {
+    async createUser(data: User) {
         const existing = await this.prisma.user.findUnique({
             where: {
                 username: data.username,
@@ -26,6 +26,21 @@ export class UserService {
 
         return this.prisma.user.create({
             data,
+        });
+    }
+
+    // Delete an user type by ID
+    async deleteUser(id: string) {
+
+        const existing = await this.prisma.user.findUnique({ where: { id: id } });
+        if (existing && existing.username == "admin") {
+            throw new ConflictException('You can\'t delete the user with admin username');
+        }
+
+
+
+        return this.prisma.user.delete({
+            where: { id },
         });
     }
 }

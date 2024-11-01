@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Res, UseGuards } from "@nestjs/common";//UseGuards
+import { Controller, Delete, Get, Param, Req, Res, UseGuards } from "@nestjs/common";//UseGuards
 import { UserService } from "./user.service";
 import { Request, Response } from 'express'
 import { JwtAuthGuard } from "src/authentication/auth.guard";
@@ -25,5 +25,10 @@ export class UserController {
                 message: 'Internal Server Error!'
             })
         }
+    }
+
+    @Delete(':id')
+    remove(@Param('id') id: string) {
+        return this.userService.deleteUser(id);
     }
 }

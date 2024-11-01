@@ -1,4 +1,6 @@
-import { IsString, Length } from "class-validator";
+
+import { IsEnum, IsString, Length } from "class-validator";
+import { Role } from "../role.enum";
 
 
 export class RegisterUsersDto {
@@ -14,4 +16,6 @@ export class RegisterUsersDto {
     @IsString()
     @Length(5, 10)
     email: string
+    @IsEnum(Role)
+    role: Role
 }
