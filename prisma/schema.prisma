@@ -56,7 +56,7 @@ model Visa {
   visaEnd    DateTime
   visaType   VisaType @relation(fields: [visaTypeId], references: [id])
   visaTypeId String
-  student    Student  @relation(fields: [studentsId], references: [id])
+  student    Student  @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   studentsId String
 }
 
@@ -67,7 +67,7 @@ model Registration {
   registrationAddress String   @db.VarChar(200)
   registrationStart   DateTime
   registrationEnd     DateTime
-  student             Student  @relation(fields: [studentsId], references: [id])
+  student             Student  @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   studentsId          String
 }
 
@@ -75,11 +75,11 @@ model Student {
   id          String @id @default(uuid())
   phoneNumber String @db.VarChar(45)
   firstName   String @db.VarChar(45)
-  lastName    String @unique @db.VarChar(45)
-  middleName  String @unique @db.VarChar(45)
+  lastName    String @db.VarChar(45)
+  middleName  String @db.VarChar(45)
 
-  passportSeries  String         @unique @db.VarChar(20)
-  passportNumber  String         @unique @db.VarChar(20)
+  passportSeries  String         @db.VarChar(20)
+  passportNumber  String         @db.VarChar(20)
   passportExpired DateTime
   pinfl           String         @unique @db.VarChar(20)
   visas           Visa[]

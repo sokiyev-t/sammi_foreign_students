@@ -8,6 +8,24 @@ import { UpdateCitizenDto } from './dto/update-citizen.dto';
 export class CitizenService {
     constructor(private prisma: PrismaService) { }
 
+
+
+    async createCitizens(data: CreateCitizenDto[]) {
+        try {
+            return await this.prisma.citizen.createMany({
+                data,
+                skipDuplicates: true, // Skip records that have duplicate unique fields
+            });
+        } catch (error) {
+            if (error.code === 'P2002') {
+                // P2002 is the Prisma error code for unique constraint violations
+                throw new Error('Duplicate record found. Please ensure all values are unique.');
+            }
+            throw error; // Re-throw other errors if they occur
+        }
+    }
+
+
     // Create a new citizen
     async createCitizen(data: CreateCitizenDto) {
         return this.prisma.citizen.create({
@@ -33,6 +51,11 @@ export class CitizenService {
             where: { id },
             data: data,
         });
+    }
+
+    // Delete a consultant by ID
+    async deleteAll() {
+        return this.prisma.consultant.deleteMany({});
     }
 
     // Delete a citizen by ID

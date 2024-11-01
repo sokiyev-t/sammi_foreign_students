@@ -2,14 +2,17 @@ import { Controller, Delete, Get, Param, Req, Res, UseGuards } from "@nestjs/com
 import { UserService } from "./user.service";
 import { Request, Response } from 'express'
 import { JwtAuthGuard } from "src/authentication/auth.guard";
+import { Roles } from "src/authentication/roles.decorator";
+import { Role } from "src/authentication/role.enum";
 
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UserController {
     constructor(private readonly userService: UserService) { }
 
     @Get()
-    @UseGuards(JwtAuthGuard)
+    @Roles(Role.ADMIN)
     async getAllUsers(@Req() request: Request, @Res() response: Response): Promise<any> {
         try {
             const result = await this.userService.getAllUser();
@@ -28,6 +31,7 @@ export class UserController {
     }
 
     @Delete(':id')
+    @Roles(Role.ADMIN)
     remove(@Param('id') id: string) {
         return this.userService.deleteUser(id);
     }

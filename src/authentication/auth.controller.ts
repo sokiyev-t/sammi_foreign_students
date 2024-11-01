@@ -37,6 +37,7 @@ export class AuthController {
 
 
     @Post('/add-admin')
+    @Public()
     async addAdmin(@Req() request: Request, @Res() response: Response, @Body() registerDto: RegisterUsersDto): Promise<any> {
         try {
             const result = await this.authService.addAdmin(registerDto);

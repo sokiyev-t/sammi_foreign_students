@@ -7,38 +7,46 @@ import { UpdateVisaTypeDto } from './dto/update-visa-type.dto';
 import { Roles } from 'src/authentication/roles.decorator';
 import { Role } from 'src/authentication/role.enum';
 import { JwtAuthGuard } from 'src/authentication/auth.guard';
-import { Public } from 'src/authentication/public.decorator';
 
 @Controller('visa-type')
-@UseGuards(JwtAuthGuard) // Apply RolesGuard at the controller level
+@UseGuards(JwtAuthGuard)
 export class VisaTypeController {
     constructor(private readonly visaTypeService: VisaTypeService) { }
 
     @Post()
-    @Roles(Role.ADMIN, Role.EDITOR) // Accessible by admins and editors
+    @Roles(Role.ADMIN, Role.EDITOR)
     create(@Body() createVisaTypeDto: CreateVisaTypeDto) {
         return this.visaTypeService.createVisaType(createVisaTypeDto);
     }
 
     @Get()
-    @Public() // Public route
+    @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
     findAll() {
         return this.visaTypeService.findAll();
     }
 
     @Get(':id')
+    @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
     findOne(@Param('id') id: string) {
         return this.visaTypeService.findOne(id);
     }
 
     @Patch(':id')
-    @Roles(Role.ADMIN, Role.EDITOR) // Accessible by admins and editors
+    @Roles(Role.ADMIN, Role.EDITOR)
     update(@Param('id') id: string, @Body() updateVisaTypeDto: UpdateVisaTypeDto) {
         return this.visaTypeService.updateVisaType(id, updateVisaTypeDto);
     }
 
+    @Delete("/delete-all")
+    @Roles(Role.ADMIN, Role.EDITOR)
+    removeAll() {
+        return this.visaTypeService.deleteAll();
+    }
+
     @Delete(':id')
+    @Roles(Role.ADMIN, Role.EDITOR)
     remove(@Param('id') id: string) {
         return this.visaTypeService.deleteVisaType(id);
     }
+
 }

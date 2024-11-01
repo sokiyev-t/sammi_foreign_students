@@ -41,4 +41,10 @@ export class VisaTypeService {
             where: { id },
         });
     }
+    // Delete a visa type by ID
+    async deleteAll() {
+        return this.prisma.visaType.deleteMany({
+
+        });
+    }
 }

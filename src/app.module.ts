@@ -7,11 +7,12 @@ import { VisaModule } from './visa/visa.module';
 import { ConsultantModule } from './consultant/consultant.module';
 import { RegistrationModule } from './registration/registration.module';
 import { SettingsModule } from './settings/settings.module';
+import { StudentModule } from './student/student.module';
 // import { StudentModule } from './student/student.module';
 
 
 @Module({
-  imports: [UserModule, AuthModule, CitizenModule, VisaTypeModule, VisaModule, ConsultantModule, RegistrationModule, SettingsModule],
+  imports: [UserModule, AuthModule, CitizenModule, VisaTypeModule, VisaModule, ConsultantModule, RegistrationModule, SettingsModule, StudentModule],
   controllers: [],
   providers: [],
 })

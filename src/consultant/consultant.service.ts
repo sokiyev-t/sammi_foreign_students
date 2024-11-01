@@ -9,9 +9,26 @@ export class ConsultantService {
     constructor(private prisma: PrismaService) { }
 
     // Create a new consultant record
+    async createConsultants(data: CreateConsultantDto[]) {
+        try {
+            return await this.prisma.consultant.createMany({
+                data,
+                skipDuplicates: true, // Skip records that have duplicate unique fields
+            });
+        } catch (error) {
+            if (error.code === 'P2002') {
+                // P2002 is the Prisma error code for unique constraint violations
+                throw new Error('Duplicate record found. Please ensure all values are unique.');
+            }
+            throw error; // Re-throw other errors if they occur
+        }
+    }
+    // Create a new consultant record
     async createConsultant(data: CreateConsultantDto) {
-        return this.prisma.consultant.create({
+        this.prisma.consultant.create({
             data,
+        }).then((data) => { return data; }).catch((e) => {
+            throw e;
         });
     }
 
@@ -38,6 +55,10 @@ export class ConsultantService {
         });
     }
 
+    // Delete a consultant by ID
+    async deleteAll() {
+        return this.prisma.consultant.deleteMany({});
+    }
     // Delete a consultant by ID
     async deleteConsultant(id: string) {
         return this.prisma.consultant.delete({
