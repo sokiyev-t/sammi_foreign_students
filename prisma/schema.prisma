@@ -43,17 +43,16 @@ model VisaType {
 model Consultant {
   id          String @id @default(uuid())
   name        String @db.VarChar(45)
-  phoneNumber String @db.VarChar(45)
-
-  Student Student[]
+  phoneNumber String? @db.VarChar(45) // Может быть null
+  Student     Student[]
 }
 
 model Visa {
   id         String   @id @default(uuid())
-  visaSeries String   @db.VarChar(45)
-  visaNumber String   @db.VarChar(45)
-  visaStart  DateTime
-  visaEnd    DateTime
+  visaSeries String?  @db.VarChar(45) // Может быть null
+  visaNumber String?  @db.VarChar(45) // Может быть null
+  visaStart  DateTime? // Может быть null
+  visaEnd    DateTime? // Может быть null
   visaType   VisaType @relation(fields: [visaTypeId], references: [id])
   visaTypeId String
   student    Student  @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -62,26 +61,26 @@ model Visa {
 
 model Registration {
   id                  String   @id @default(uuid())
-  registrationSeries  String   @db.VarChar(45)
-  registrationNumber  String   @db.VarChar(45)
-  registrationAddress String   @db.VarChar(200)
-  registrationStart   DateTime
-  registrationEnd     DateTime
+  registrationSeries  String?  @db.VarChar(45)  // Может быть null
+  registrationNumber  String?  @db.VarChar(45)  // Может быть null
+  registrationAddress String?  @db.VarChar(200) // Может быть null
+  registrationStart   DateTime? // Может быть null
+  registrationEnd     DateTime? // Может быть null
   student             Student  @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   studentsId          String
 }
 
 model Student {
-  id          String @id @default(uuid())
-  phoneNumber String @db.VarChar(45)
-  firstName   String @db.VarChar(45)
-  lastName    String @db.VarChar(45)
-  middleName  String @db.VarChar(45)
+  id              String @id @default(uuid())
+  phoneNumber     String? @db.VarChar(45) // Может быть null
+  firstName       String  @db.VarChar(45)
+  lastName        String? @db.VarChar(45) // Может быть null
+  middleName      String? @db.VarChar(45) // Может быть null
 
-  passportSeries  String         @db.VarChar(20)
-  passportNumber  String         @db.VarChar(20)
-  passportExpired DateTime
-  pinfl           String         @unique @db.VarChar(20)
+  passportSeries  String  @db.VarChar(20)
+  passportNumber  String  @db.VarChar(20)
+  passportExpired DateTime? // Может быть null
+  pinfl           String  @db.VarChar(20)
   visas           Visa[]
   registrations   Registration[]
 
@@ -97,3 +96,4 @@ model Settings {
   visaTime         DateTime
   registrationTime DateTime
 }
+

@@ -1,115 +1,127 @@
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
 
 const prisma = new PrismaClient();
 
+// Функция для конвертации даты в ISO-формат
+const parseDate = (dateStr: string): Date | null => {
+  if (!dateStr || dateStr === "") return null;
+  const [day, month, year] = dateStr.split("/").map(Number);
+  if (!day || !month || !year) return null;
+  return new Date(`${year}-${month}-${day}`);
+};
+
 async function main() {
+  const dataPath = '/home/doston_user/sammi_foreign_students/prisma/data.json'; // Укажите правильный путь
 
-  // Ensure the path to the data file is correct
-  const dataPath = path.join(__dirname, 'data.json');
-
-  // Check if the file exists
   if (!fs.existsSync(dataPath)) {
-    console.error(`Data file not found at path: ${dataPath}`);
+    console.error('File not found:', dataPath);
     process.exit(1);
   }
 
-  const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  let data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
 
   for (const studentData of data) {
-    // Generate UUIDs for any missing IDs
-    if (!studentData.id) {
-      studentData.id = uuidv4();
-    }
-    if (!studentData.consultant.connect.id) {
-      studentData.consultant.connect.id = uuidv4();
-    }
-    if (!studentData.citizen.connect.id) {
-      studentData.citizen.connect.id = uuidv4();
-    }
-    if (!studentData.visas[0].visaType.connect.id) {
-      studentData.visas[0].visaType.connect.id = uuidv4();
-    }
+    try {
+      // Заменяем отсутствующие значения на null или задаем значение по умолчанию
+      const studentId = uuidv4();
+      const phoneNumber = studentData.phoneNumber || null;
+      const firstName = studentData.firstName || "Unknown";
+      const lastName = studentData.lastName || "Unknown;
+      const middleName = studentData.middleName || null;
+      const passportSeries = studentData.passportSeries || "";
+      const passportNumber = studentData.passportNumber || "";
+      const passportExpired = parseDate(studentData.passportExpired);
+      const pinfl = studentData.pinfl || uuidv4();
 
-    // Create or connect related entities
-    await prisma.consultant.upsert({
-      where: { id: studentData.consultant.connect.id },
-      update: {},
-      create: {
-        id: studentData.consultant.connect.id,
-        name: 'Consultant Name', // You can set a default name or fetch it from another source
-        phoneNumber: 'Consultant PhoneNumber', // You can set a default phone number or fetch it from another source
-      },
-    });
+      const consultantId = studentData.consultant?.connect?.id || uuidv4();
+      const citizenId = studentData.citizen?.connect?.id || uuidv4();
 
-    await prisma.citizen.upsert({
-      where: { id: studentData.citizen.connect.id },
-      update: {},
-      create: {
-        id: studentData.citizen.connect.id,
-        name: 'Citizen Name', // You can set a default name or fetch it from another source
-      },
-    });
+      const visas = studentData.visas?.map(visa => ({
+        id: uuidv4(),
+        visaSeries: visa.visaSeries || null,
+        visaNumber: visa.visaNumber || null,
+        visaStart: parseDate(visa.visaStart),
+        visaEnd: parseDate(visa.visaEnd),
+        visaType: {
+          connect: { id: visa.visaType?.connect?.id || uuidv4() },
+        },
+      })) || [];
 
-    await prisma.visaType.upsert({
-      where: { id: studentData.visas[0].visaType.connect.id },
-      update: {},
-      create: {
-        id: studentData.visas[0].visaType.connect.id,
-        name: 'Visa Type Name', // You can set a default name or fetch it from another source
-      },
-    });
+      const registrations = studentData.registrations?.map(reg => ({
+        id: uuidv4(),
+        registrationSeries: reg.registrationSeries || null,
+        registrationNumber: reg.registrationNumber || null,
+        registrationAddress: reg.registrationAddress || null,
+        registrationStart: parseDate(reg.registrationStart),
+        registrationEnd: parseDate(reg.registrationEnd),
+      })) || [];
 
-    // Create the student and related entities
-    await prisma.student.create({
-      data: {
-        id: studentData.id,
-        phoneNumber: studentData.phoneNumber,
-        firstName: studentData.firstName,
-        lastName: studentData.lastName,
-        middleName: studentData.middleName,
-        passportSeries: studentData.passportSeries,
-        passportNumber: studentData.passportNumber,
-        passportExpired: new Date(studentData.passportExpired),
-        pinfl: studentData.pinfl,
-        consultant: {
-          connect: { id: studentData.consultant.connect.id },
+      // Убедимся, что связанные данные созданы или существуют
+      await prisma.consultant.upsert({
+        where: { id: consultantId },
+        update: {},
+        create: {
+          id: consultantId,
+          name: "Default Consultant",
+          phoneNumber: null,
         },
-        citizen: {
-          connect: { id: studentData.citizen.connect.id },
+      });
+
+      await prisma.citizen.upsert({
+        where: { id: citizenId },
+        update: {},
+        create: {
+          id: citizenId,
+          name: "Default Citizen",
         },
-        visas: {
-          create: studentData.visas.map(visa => ({
-            visaSeries: visa.visaSeries,
-            visaNumber: visa.visaNumber,
-            visaStart: new Date(visa.visaStart),
-            visaEnd: new Date(visa.visaEnd),
-            visaType: {
-              connect: { id: visa.visaType.connect.id },
-            },
-          })),
+      });
+
+      for (const visa of visas) {
+        await prisma.visaType.upsert({
+          where: { id: visa.visaType.connect.id },
+          update: {},
+          create: {
+            id: visa.visaType.connect.id,
+            name: "Default Visa Type",
+          },
+        });
+      }
+
+      // Создаем данные студента
+      await prisma.student.create({
+        data: {
+          id: studentId,
+          phoneNumber,
+          firstName,
+          lastName,
+          middleName,
+          passportSeries,
+          passportNumber,
+          passportExpired,
+          pinfl,
+          consultant: {
+            connect: { id: consultantId },
+          },
+          citizen: {
+            connect: { id: citizenId },
+          },
+          visas: {
+            create: visas,
+          },
+          registrations: {
+            create: registrations,
+          },
         },
-        registrations: {
-          create: studentData.registrations.map(registration => ({
-            registrationSeries: registration.registrationSeries,
-            registrationNumber: registration.registrationNumber,
-            registrationAddress: registration.registrationAddress,
-            registrationStart: new Date(registration.registrationStart),
-            registrationEnd: new Date(registration.registrationEnd),
-          })),
-        },
-      },
-    });
+      });
+    } catch (error) {
+      console.error(`Error processing student ${studentData.firstName || "Unknown"}:`, error);
+    }
   }
 }
 
 main()
-  .catch(e => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .catch(err => console.error(err))
+  .finally(() => prisma.$disconnect());
+
