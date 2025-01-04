@@ -1,127 +1,72 @@
 import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import * as fs from 'fs';
+import fs from 'fs';
 
 const prisma = new PrismaClient();
 
-// Функция для конвертации даты в ISO-формат
-const parseDate = (dateStr: string): Date | null => {
-  if (!dateStr || dateStr === "") return null;
-  const [day, month, year] = dateStr.split("/").map(Number);
-  if (!day || !month || !year) return null;
-  return new Date(`${year}-${month}-${day}`);
-};
-
 async function main() {
-  const dataPath = '/home/doston_user/sammi_foreign_students/prisma/data.json'; // Укажите правильный путь
+  const filePath = '/home/doston_user/sammi_foreign_students/prisma/data.json';
+  const rawData = fs.readFileSync(filePath, 'utf-8');
+  const studentsData = JSON.parse(rawData);
 
-  if (!fs.existsSync(dataPath)) {
-    console.error('File not found:', dataPath);
-    process.exit(1);
-  }
-
-  let data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-
-  for (const studentData of data) {
-    try {
-      // Заменяем отсутствующие значения на null или задаем значение по умолчанию
-      const studentId = uuidv4();
-      const phoneNumber = studentData.phoneNumber || null;
-      const firstName = studentData.firstName || "Unknown";
-      const lastName = studentData.lastName || "Unknown;
-      const middleName = studentData.middleName || null;
-      const passportSeries = studentData.passportSeries || "";
-      const passportNumber = studentData.passportNumber || "";
-      const passportExpired = parseDate(studentData.passportExpired);
-      const pinfl = studentData.pinfl || uuidv4();
-
-      const consultantId = studentData.consultant?.connect?.id || uuidv4();
-      const citizenId = studentData.citizen?.connect?.id || uuidv4();
-
-      const visas = studentData.visas?.map(visa => ({
-        id: uuidv4(),
-        visaSeries: visa.visaSeries || null,
-        visaNumber: visa.visaNumber || null,
-        visaStart: parseDate(visa.visaStart),
-        visaEnd: parseDate(visa.visaEnd),
-        visaType: {
-          connect: { id: visa.visaType?.connect?.id || uuidv4() },
+  for (const studentData of studentsData) {
+    await prisma.student.create({
+      data: {
+        passportNumber: studentData.passportNumber,
+        phoneNumber: studentData.phoneNumber,
+        firstName: studentData.firstName,
+        lastName: studentData.lastName,
+        middleName: studentData.middleName,
+        passportExpired: new Date(studentData.passportExpired),
+        passportSeries: studentData.passportSeries,
+        pinfl: studentData.pinfl,
+        registrations: {
+          create: studentData.registrations.map(registration => ({
+            registrationEnd: new Date(registration.registrationEnd),
+            registrationSeries: registration.registrationSeries,
+            registrationNumber: registration.registrationNumber,
+            registrationAddress: registration.registrationAddress,
+            registrationStart: new Date(registration.registrationStart)
+          }))
         },
-      })) || [];
-
-      const registrations = studentData.registrations?.map(reg => ({
-        id: uuidv4(),
-        registrationSeries: reg.registrationSeries || null,
-        registrationNumber: reg.registrationNumber || null,
-        registrationAddress: reg.registrationAddress || null,
-        registrationStart: parseDate(reg.registrationStart),
-        registrationEnd: parseDate(reg.registrationEnd),
-      })) || [];
-
-      // Убедимся, что связанные данные созданы или существуют
-      await prisma.consultant.upsert({
-        where: { id: consultantId },
-        update: {},
-        create: {
-          id: consultantId,
-          name: "Default Consultant",
-          phoneNumber: null,
+        visas: {
+          create: studentData.visas.map(visa => ({
+            visaSeries: visa.visaSeries,
+            visaNumber: visa.visaNumber,
+            visaStart: new Date(visa.visaStart),
+            visaEnd: new Date(visa.visaEnd),
+            visaType: {
+              connectOrCreate: {
+                where: { name: visa.visaType.connect.name },
+                create: { name: visa.visaType.connect.name }
+              }
+            }
+          }))
         },
-      });
-
-      await prisma.citizen.upsert({
-        where: { id: citizenId },
-        update: {},
-        create: {
-          id: citizenId,
-          name: "Default Citizen",
+        consultant: {
+          connectOrCreate: {
+            where: { name: studentData.consultant.connect.name },
+            create: { name: studentData.consultant.connect.name }
+          }
         },
-      });
-
-      for (const visa of visas) {
-        await prisma.visaType.upsert({
-          where: { id: visa.visaType.connect.id },
-          update: {},
-          create: {
-            id: visa.visaType.connect.id,
-            name: "Default Visa Type",
-          },
-        });
+        citizen: {
+          connectOrCreate: {
+            where: { name: studentData.citizen.connect.name },
+            create: { name: studentData.citizen.connect.name }
+          }
+        }
       }
-
-      // Создаем данные студента
-      await prisma.student.create({
-        data: {
-          id: studentId,
-          phoneNumber,
-          firstName,
-          lastName,
-          middleName,
-          passportSeries,
-          passportNumber,
-          passportExpired,
-          pinfl,
-          consultant: {
-            connect: { id: consultantId },
-          },
-          citizen: {
-            connect: { id: citizenId },
-          },
-          visas: {
-            create: visas,
-          },
-          registrations: {
-            create: registrations,
-          },
-        },
-      });
-    } catch (error) {
-      console.error(`Error processing student ${studentData.firstName || "Unknown"}:`, error);
-    }
+    });
   }
+
+  console.log("Seeding completed.");
 }
 
 main()
-  .catch(err => console.error(err))
-  .finally(() => prisma.$disconnect());
+  .catch(e => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
 
