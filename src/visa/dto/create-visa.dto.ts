@@ -2,21 +2,21 @@
 import { IsString, IsDateString, IsInt } from 'class-validator';
 
 export class CreateVisaDto {
-    @IsString()
-    visaSeries: string;
+  @IsString()
+  visaSeries: string;
 
-    @IsString()
-    visaNumber: string;
+  @IsString()
+  visaNumber: string;
 
-    @IsDateString()
-    visaStart: Date;
+  @IsDateString()
+  visaStart: Date;
 
-    @IsDateString()
-    visaEnd: Date;
+  @IsDateString()
+  visaEnd: Date;
 
-    @IsInt()
-    visaTypeId: string;
+  @IsInt()
+  visaTypeId: string;
 
-    @IsInt()
-    studentsId: string;
+  @IsInt()
+  studentsId: string;
 }

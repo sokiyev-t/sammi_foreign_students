@@ -23,7 +23,7 @@ model User {
   id       String @id @default(uuid())
   name     String @db.VarChar(100)
   password String @db.VarChar(100)
-  username String @unique @db.VarChar(45)
+  username String @unique @db.VarChar(46)
   email    String @unique @db.VarChar(45)
   role     Role   @default(VIEWER)
 }

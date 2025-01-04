@@ -1,8 +1,8 @@
 import {
-    Injectable,
-    ExecutionContext,
-    UnauthorizedException,
-    ForbiddenException,
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
@@ -13,39 +13,39 @@ import { Role } from './role.enum';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-    constructor(private reflector: Reflector) {
-        super();
+  constructor(private reflector: Reflector) {
+    super();
+  }
+
+  canActivate(context: ExecutionContext): boolean {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
     }
 
-    canActivate(context: ExecutionContext): boolean {
-        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-            context.getHandler(),
-            context.getClass(),
-        ]);
-        if (isPublic) {
-            return true;
-        }
+    return super.canActivate(context) as boolean;
+  }
 
-        return super.canActivate(context) as boolean;
+  handleRequest(err, user, info, context: ExecutionContext) {
+    if (err || !user) {
+      throw err || new UnauthorizedException();
     }
 
-    handleRequest(err, user, info, context: ExecutionContext) {
-        if (err || !user) {
-            throw err || new UnauthorizedException();
-        }
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    // console.log("my Roles: ", user, requiredRoles);
 
-        const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
-            context.getHandler(),
-            context.getClass(),
-        ]);
-        // console.log("my Roles: ", user, requiredRoles);
-
-        if (requiredRoles.includes(user.role)) {
-            return user;
-        } else {
-            throw new ForbiddenException('You do not have the necessary role');
-        }
+    if (requiredRoles.includes(user.role)) {
+      return user;
+    } else {
+      throw new ForbiddenException('You do not have the necessary role');
     }
+  }
 }
 
 // @Injectable()

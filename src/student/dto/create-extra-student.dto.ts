@@ -3,37 +3,37 @@ import { CreateRegistrationDto } from 'src/registration/dto/create-registration.
 import { CreateVisaDto } from 'src/visa/dto/create-visa.dto';
 
 export class CreateExtraStudentDto {
-    @IsString()
-    firstName: string;
+  @IsString()
+  firstName: string;
 
-    @IsString()
-    lastName: string;
+  @IsString()
+  lastName: string;
 
-    @IsString()
-    middleName: string;
+  @IsString()
+  middleName: string;
 
-    @IsString()
-    phoneNumber: string;
+  @IsString()
+  phoneNumber: string;
 
-    @IsString()
-    passportSeries: string;
+  @IsString()
+  passportSeries: string;
 
-    @IsString()
-    passportNumber: string;
+  @IsString()
+  passportNumber: string;
 
-    @IsDate()
-    passportExpired: Date;
+  @IsDate()
+  passportExpired: Date;
 
-    @IsString()
-    pinfl: string;
+  @IsString()
+  pinfl: string;
 
-    @IsString()
-    citizenId: string; // Ensure this is a string
+  @IsString()
+  citizenId: string; // Ensure this is a string
 
-    @IsString()
-    consultantId: string; // Ensure this is a string
+  @IsString()
+  consultantId: string; // Ensure this is a string
 
-    visas: CreateVisaDto[];
+  visas: CreateVisaDto[];
 
-    registrations: CreateRegistrationDto[];
+  registrations: CreateRegistrationDto[];
 }

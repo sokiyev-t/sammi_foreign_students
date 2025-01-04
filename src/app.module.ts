@@ -10,10 +10,19 @@ import { SettingsModule } from './settings/settings.module';
 import { StudentModule } from './student/student.module';
 // import { StudentModule } from './student/student.module';
 
-
 @Module({
-  imports: [UserModule, AuthModule, CitizenModule, VisaTypeModule, VisaModule, ConsultantModule, RegistrationModule, SettingsModule, StudentModule],
+  imports: [
+    UserModule,
+    AuthModule,
+    CitizenModule,
+    VisaTypeModule,
+    VisaModule,
+    ConsultantModule,
+    RegistrationModule,
+    SettingsModule,
+    StudentModule,
+  ],
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}

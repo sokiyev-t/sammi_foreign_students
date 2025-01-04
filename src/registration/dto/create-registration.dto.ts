@@ -2,21 +2,21 @@
 import { IsString, IsDate } from 'class-validator';
 
 export class CreateRegistrationDto {
-    @IsString()
-    registrationSeries: string;
+  @IsString()
+  registrationSeries: string;
 
-    @IsString()
-    registrationNumber: string;
+  @IsString()
+  registrationNumber: string;
 
-    @IsString()
-    registrationAddress: string;
+  @IsString()
+  registrationAddress: string;
 
-    @IsDate()
-    registrationStart: Date;
+  @IsDate()
+  registrationStart: Date;
 
-    @IsDate()
-    registrationEnd: Date;
+  @IsDate()
+  registrationEnd: Date;
 
-    @IsString()
-    studentsId: string;
+  @IsString()
+  studentsId: string;
 }

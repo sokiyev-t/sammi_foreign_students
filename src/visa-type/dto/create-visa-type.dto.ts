@@ -2,6 +2,6 @@
 import { IsString } from 'class-validator';
 
 export class CreateVisaTypeDto {
-    @IsString()
-    name: string;
+  @IsString()
+  name: string;
 }

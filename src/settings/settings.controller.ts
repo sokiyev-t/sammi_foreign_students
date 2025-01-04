@@ -6,20 +6,20 @@ import { UpdateSettingsDto } from './dto/update-settings.dto';
 
 @Controller('settings')
 export class SettingsController {
-    constructor(private readonly settingsService: SettingsService) { }
+  constructor(private readonly settingsService: SettingsService) {}
 
-    @Post()
-    create(@Body() createSettingsDto: CreateSettingsDto) {
-        return this.settingsService.createSettings(createSettingsDto);
-    }
+  @Post()
+  create(@Body() createSettingsDto: CreateSettingsDto) {
+    return this.settingsService.createSettings(createSettingsDto);
+  }
 
-    @Get()
-    findOne() {
-        return this.settingsService.findOne();
-    }
+  @Get()
+  findOne() {
+    return this.settingsService.findOne();
+  }
 
-    @Patch()
-    update(@Body() updateSettingsDto: UpdateSettingsDto) {
-        return this.settingsService.updateSettings(updateSettingsDto);
-    }
+  @Patch()
+  update(@Body() updateSettingsDto: UpdateSettingsDto) {
+    return this.settingsService.updateSettings(updateSettingsDto);
+  }
 }
