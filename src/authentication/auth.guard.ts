@@ -38,7 +38,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getHandler(),
       context.getClass(),
     ]);
-    // console.log("my Roles: ", user, requiredRoles);
+
+    if (!requiredRoles || !requiredRoles.length) {
+      throw new ForbiddenException('No roles specified');
+    }
+
+    if (!user.role) {
+      throw new ForbiddenException('User role is not defined');
+    }
 
     if (requiredRoles.includes(user.role)) {
       return user;
