@@ -6,7 +6,16 @@ import path from 'path';
 const prisma = new PrismaClient();
 
 async function main() {
+
+  // Ensure the path to the data file is correct
   const dataPath = path.join(__dirname, 'data.json');
+
+  // Check if the file exists
+  if (!fs.existsSync(dataPath)) {
+    console.error(`Data file not found at path: ${dataPath}`);
+    process.exit(1);
+  }
+
   const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
   for (const studentData of data) {
