@@ -1,14 +1,24 @@
 import { PrismaClient } from '@prisma/client';
-import fs from 'fs';
+const fs = require('fs');
 
 const prisma = new PrismaClient();
 
 async function main() {
+  // Чтение данных из файла data.json
   const filePath = '/home/doston_user/sammi_foreign_students/prisma/data.json';
   const rawData = fs.readFileSync(filePath, 'utf-8');
   const studentsData = JSON.parse(rawData);
 
   for (const studentData of studentsData) {
+    const visaTypeName = studentData.visas[0].visaType.connect.name;
+    const consultantName = studentData.consultant.connect.name;
+    const citizenName = studentData.citizen.connect.name;
+
+    if (!visaTypeName || !consultantName || !citizenName) {
+      console.error('Missing required fields in data:', studentData);
+      continue;
+    }
+
     await prisma.student.create({
       data: {
         passportNumber: studentData.passportNumber,
@@ -36,22 +46,22 @@ async function main() {
             visaEnd: new Date(visa.visaEnd),
             visaType: {
               connectOrCreate: {
-                where: { name: visa.visaType.connect.name },
-                create: { name: visa.visaType.connect.name }
+                where: { name: visaTypeName },
+                create: { name: visaTypeName }
               }
             }
           }))
         },
         consultant: {
           connectOrCreate: {
-            where: { name: studentData.consultant.connect.name },
-            create: { name: studentData.consultant.connect.name }
+            where: { name: consultantName },
+            create: { name: consultantName }
           }
         },
         citizen: {
           connectOrCreate: {
-            where: { name: studentData.citizen.connect.name },
-            create: { name: studentData.citizen.connect.name }
+            where: { name: citizenName },
+            create: { name: citizenName }
           }
         }
       }
