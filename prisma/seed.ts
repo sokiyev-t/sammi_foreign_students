@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 const fs = require('fs');
 
 const prisma = new PrismaClient();
@@ -8,6 +9,20 @@ async function main() {
   const filePath = '/home/doston_user/sammi_foreign_students/prisma/data.json';
   const rawData = fs.readFileSync(filePath, 'utf-8');
   const studentsData = JSON.parse(rawData);
+
+  const adminUser = await prisma.user.upsert({
+    where: { username: 'admin' },
+    update: {},
+    create: {
+      username: 'admin',
+      email: 'admin@admin.admin',
+      password: await bcrypt.hash('admin', 10),
+      name: 'Admin',
+      role: 'ADMIN',
+    },
+  });
+
+  console.log({ adminUser });
 
   for (const studentData of studentsData) {
     const visaTypeName = studentData.visas[0].visaType.connect.name;
@@ -19,53 +34,58 @@ async function main() {
       continue;
     }
 
-    await prisma.student.create({
-      data: {
-        passportNumber: studentData.passportNumber,
-        phoneNumber: studentData.phoneNumber,
-        firstName: studentData.firstName,
-        lastName: studentData.lastName,
-        middleName: studentData.middleName,
-        passportExpired: new Date(studentData.passportExpired),
-        passportSeries: studentData.passportSeries,
-        pinfl: studentData.pinfl,
-        registrations: {
-          create: studentData.registrations.map(registration => ({
-            registrationEnd: new Date(registration.registrationEnd),
-            registrationSeries: registration.registrationSeries,
-            registrationNumber: registration.registrationNumber,
-            registrationAddress: registration.registrationAddress,
-            registrationStart: new Date(registration.registrationStart)
-          }))
-        },
-        visas: {
-          create: studentData.visas.map(visa => ({
-            visaSeries: visa.visaSeries,
-            visaNumber: visa.visaNumber,
-            visaStart: new Date(visa.visaStart),
-            visaEnd: new Date(visa.visaEnd),
-            visaType: {
-              connectOrCreate: {
-                where: { name: visaTypeName },
-                create: { name: visaTypeName }
+    try {
+      await prisma.student.create({
+        data: {
+          passportNumber: studentData.passportNumber,
+          phoneNumber: studentData.phoneNumber,
+          firstName: studentData.firstName,
+          lastName: studentData.lastName,
+          middleName: studentData.middleName,
+          passportExpired: new Date(studentData.passportExpired),
+          passportSeries: studentData.passportSeries,
+          pinfl: studentData.pinfl,
+          registrations: {
+            create: studentData.registrations.map(registration => ({
+              registrationEnd: new Date(registration.registrationEnd),
+              registrationSeries: registration.registrationSeries,
+              registrationNumber: registration.registrationNumber,
+              registrationAddress: registration.registrationAddress,
+              registrationStart: new Date(registration.registrationStart)
+            }))
+          },
+          visas: {
+            create: studentData.visas.map(visa => ({
+              visaSeries: visa.visaSeries,
+              visaNumber: visa.visaNumber,
+              visaStart: new Date(visa.visaStart),
+              visaEnd: new Date(visa.visaEnd),
+              visaType: {
+                connectOrCreate: {
+                  where: { name: visaTypeName },
+                  create: { name: visaTypeName }
+                }
               }
+            }))
+          },
+          consultant: {
+            connectOrCreate: {
+              where: { name: consultantName },
+              create: { name: consultantName }
             }
-          }))
-        },
-        consultant: {
-          connectOrCreate: {
-            where: { name: consultantName },
-            create: { name: consultantName }
-          }
-        },
-        citizen: {
-          connectOrCreate: {
-            where: { name: citizenName },
-            create: { name: citizenName }
+          },
+          citizen: {
+            connectOrCreate: {
+              where: { name: citizenName },
+              create: { name: citizenName }
+            }
           }
         }
-      }
-    });
+      });
+    } catch (error) {
+      console.error('Error creating student:', studentData);
+      console.error(error);
+    }
   }
 
   console.log("Seeding completed.");

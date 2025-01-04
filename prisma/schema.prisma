@@ -23,7 +23,7 @@ model User {
   id       String @id @default(uuid())
   name     String @db.VarChar(100)
   password String @db.VarChar(100)
-  username String @unique @db.VarChar(46)
+  username String @unique @db.VarChar(45)
   email    String @unique @db.VarChar(45)
   role     Role   @default(VIEWER)
 }
@@ -42,15 +42,15 @@ model VisaType {
 
 model Consultant {
   id          String @id @default(uuid())
-  name        String @unique @db.VarChar(45)
-  phoneNumber String? @db.VarChar(45) // Может быть null
+  name        String @unique @db.VarChar(65)
+  phoneNumber String? @db.VarChar(65) // Может быть null
   Student     Student[]
 }
 
 model Visa {
   id         String   @id @default(uuid())
-  visaSeries String?  @db.VarChar(45) // Может быть null
-  visaNumber String?  @db.VarChar(45) // Может быть null
+  visaSeries String?  @db.VarChar(65) // Может быть null
+  visaNumber String?  @db.VarChar(65) // Может быть null
   visaStart  DateTime? // Может быть null
   visaEnd    DateTime? // Может быть null
   visaType   VisaType @relation(fields: [visaTypeId], references: [id])
@@ -72,15 +72,15 @@ model Registration {
 
 model Student {
   id              String @id @default(uuid())
-  phoneNumber     String? @db.VarChar(45) // Может быть null
-  firstName       String?  @db.VarChar(45)
-  lastName        String? @db.VarChar(45) // Может быть null
-  middleName      String? @db.VarChar(45) // Может быть null
+  phoneNumber     String? @db.VarChar(90) // Может быть null
+  firstName       String?  @db.VarChar(90)
+  lastName        String? @db.VarChar(90) // Может быть null
+  middleName      String? @db.VarChar(90) // Может быть null
 
-  passportSeries  String?  @db.VarChar(20)
-  passportNumber  String?  @db.VarChar(20)
+  passportSeries  String?  @db.VarChar(40)
+  passportNumber  String?  @db.VarChar(40)
   passportExpired DateTime? // Может быть null
-  pinfl           String?  @db.VarChar(20)
+  pinfl           String?  @db.VarChar(40)
   visas           Visa[]
   registrations   Registration[]
 
