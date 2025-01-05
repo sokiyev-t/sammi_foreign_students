@@ -1,69 +1,167 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
-import { UserService } from 'src/user/user.service';
-import { LoginDto } from './dto/login-user.dto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
+import { AuthEntity } from './entities';
+import { ConfigService } from '@nestjs/config';
+import { AuthDto } from './dto';
+import { JwtPayload } from './types';
 import { RegisterUsersDto } from './dto/register-user.dto';
-import { User } from 'src/user/user.model';
-import { Role } from './role.enum';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prismaService: PrismaService,
-    private jwtService: JwtService,
-    private readonly usersService: UserService,
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
-  async login(loginDto: LoginDto): Promise<any> {
-    const { username, password } = loginDto;
-
-    const users = await this.prismaService.user.findUnique({
-      where: { username },
+  async login(data: AuthDto): Promise<AuthEntity> {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { username: data.username },
     });
 
-    if (!users) {
-      throw new NotFoundException('user not found');
+    const isPasswordValid = await bcrypt.compare(data.password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid password');
     }
 
-    const validatePassword = await bcrypt.compare(password, users.password);
+    const payload: JwtPayload = { sub: user.id, username: user.username, role: user.role };
 
-    if (!validatePassword) {
-      throw new NotFoundException('Invalid password');
-    }
+    const accessToken = await this.generateToken(
+      payload,
+      'JWT_ACCESS_SECRET',
+      'JWT_ACCESS_EXPIRE',
+    );
+    const refreshToken = await this.generateToken(
+      payload,
+      'JWT_REFRESH_SECRET',
+      'JWT_REFRESH_EXPIRE',
+    );
 
     return {
-      token: this.jwtService.sign({ username }),
+      accessToken,
+      refreshToken,
+      userId: user.id,
+      username: user.username,
+      userRole: user.role,
     };
   }
 
-  async register(createDto: RegisterUsersDto): Promise<any> {
-    const createUser = new User();
-    createUser.name = createDto.name;
-    createUser.email = createDto.email;
-    createUser.username = createDto.username;
-    createUser.password = await bcrypt.hash(createDto.password, 10);
-    createUser.role = createDto.role;
+  async refresh(userId: string, oldRefreshToken: string) {
+    if (!userId) {
+      throw new UnauthorizedException('Invalid user ID');
+    }
 
-    const user = await this.usersService.createUser(createUser);
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: {
+        id: userId,
+      },
+    });
+
+    try {
+      const payload = await this.jwtService.verifyAsync(oldRefreshToken, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      });
+
+      if (!payload || payload.sub !== userId) {
+        throw new UnauthorizedException('Refresh token is expired or invalid');
+      }
+    } catch {
+      throw new UnauthorizedException('Refresh token is expired or invalid');
+    }
+
+    const payload: JwtPayload = { sub: user.id, username: user.username, role: user.role };
+
+    const accessToken = await this.generateToken(
+      payload,
+      'JWT_ACCESS_SECRET',
+      'JWT_ACCESS_EXPIRE',
+    );
+    const refreshToken = await this.generateToken(
+      payload,
+      'JWT_REFRESH_SECRET',
+      'JWT_REFRESH_EXPIRE',
+    );
 
     return {
-      token: this.jwtService.sign({ username: user.username, role: user.role }),
+      accessToken,
+      refreshToken,
+    };
+  }
+  async register(createDto: RegisterUsersDto): Promise<any> {
+    const hashedPassword = await bcrypt.hash(createDto.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        password: hashedPassword,
+        ...createDto
+      }
+    });
+
+    const payload: JwtPayload = { sub: user.id, username: user.username, role: user.role };
+
+    const accessToken = await this.generateToken(
+      payload,
+      'JWT_ACCESS_SECRET',
+      'JWT_ACCESS_EXPIRE',
+    );
+    const refreshToken = await this.generateToken(
+      payload,
+      'JWT_REFRESH_SECRET',
+      'JWT_REFRESH_EXPIRE',
+    );
+
+    return {
+      accessToken,
+      refreshToken,
     };
   }
   async addAdmin(createDto: RegisterUsersDto): Promise<any> {
-    const createUser = new User();
-    createUser.name = 'admin';
-    createUser.email = createDto.email;
-    createUser.username = createDto.username;
-    createUser.password = await bcrypt.hash(createDto.password, 10);
-    createUser.role = Role.ADMIN;
 
-    const user = await this.usersService.createUser(createUser);
+    const hashedPassword = await bcrypt.hash(createDto.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        password: hashedPassword,
+        role: Role.ADMIN,
+        ...createDto
+      }
+    });
+
+    const payload: JwtPayload = { sub: user.id, username: user.username, role: user.role };
+
+    const accessToken = await this.generateToken(
+      payload,
+      'JWT_ACCESS_SECRET',
+      'JWT_ACCESS_EXPIRE',
+    );
+    const refreshToken = await this.generateToken(
+      payload,
+      'JWT_REFRESH_SECRET',
+      'JWT_REFRESH_EXPIRE',
+    );
 
     return {
-      token: this.jwtService.sign({ username: user.username, role: user.role }),
+      accessToken,
+      refreshToken,
     };
+  }
+
+  private async generateToken(
+    payload: JwtPayload,
+    secretKey: string,
+    expirationKey: string,
+  ): Promise<string> {
+    return await this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>(secretKey),
+      expiresIn: this.configService.get<string>(expirationKey),
+    });
   }
 }

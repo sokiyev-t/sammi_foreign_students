@@ -15,9 +15,9 @@ import { CitizenService } from './citizen.service';
 import { CreateCitizenDto } from './dto/create-citizen.dto';
 import { UpdateCitizenDto } from './dto/update-citizen.dto';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/authentication/auth.guard';
-import { Roles } from 'src/authentication/roles.decorator';
-import { Role } from 'src/authentication/role.enum';
+import { JwtAuthGuard } from 'src/authentication/guards';
+import { Roles } from 'src/authentication/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('citizen')
 @UseGuards(JwtAuthGuard)

@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client';
-import { Role } from 'src/authentication/role.enum';
+import { Prisma, Role } from '@prisma/client';
+
 
 export class User implements Prisma.UserCreateInput {
   password: string;

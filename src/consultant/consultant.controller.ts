@@ -15,12 +15,12 @@ import { ConsultantService } from './consultant.service';
 import { CreateConsultantDto } from './dto/create-consultant.dto';
 import { UpdateConsultantDto } from './dto/update-consultant.dto';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/authentication/auth.guard';
-import { Roles } from 'src/authentication/roles.decorator';
-import { Role } from 'src/authentication/role.enum';
+import { JwtAuthGuard } from 'src/authentication/guards';
+import { Roles } from 'src/authentication/decorators/roles.decorator';
+import { Role } from '@prisma/client';@Controller('consultant')
 
-@Controller('consultant')
 @UseGuards(JwtAuthGuard)
+@Controller('consultant')
 export class ConsultantController {
   constructor(private readonly consultantService: ConsultantService) {}
 

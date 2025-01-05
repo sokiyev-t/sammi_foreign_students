@@ -12,9 +12,9 @@ import {
 import { RegistrationService } from './registration.service';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { UpdateRegistrationDto } from './dto/update-registration.dto';
-import { JwtAuthGuard } from 'src/authentication/auth.guard';
-import { Role } from 'src/authentication/role.enum';
-import { Roles } from 'src/authentication/roles.decorator';
+import { JwtAuthGuard } from 'src/authentication/guards';
+import { Roles } from 'src/authentication/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('registration')
 @UseGuards(JwtAuthGuard)

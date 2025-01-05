@@ -9,9 +9,9 @@ import {
 } from '@nestjs/common'; //UseGuards
 import { UserService } from './user.service';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/authentication/auth.guard';
-import { Roles } from 'src/authentication/roles.decorator';
-import { Role } from 'src/authentication/role.enum';
+import { JwtAuthGuard } from 'src/authentication/guards';
+import { Roles } from 'src/authentication/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)

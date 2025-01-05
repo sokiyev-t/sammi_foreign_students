@@ -12,10 +12,9 @@ import {
 import { VisaTypeService } from './visa-type.service';
 import { CreateVisaTypeDto } from './dto/create-visa-type.dto';
 import { UpdateVisaTypeDto } from './dto/update-visa-type.dto';
-
-import { Roles } from 'src/authentication/roles.decorator';
-import { Role } from 'src/authentication/role.enum';
-import { JwtAuthGuard } from 'src/authentication/auth.guard';
+import { JwtAuthGuard } from 'src/authentication/guards';
+import { Roles } from 'src/authentication/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('visa-type')
 @UseGuards(JwtAuthGuard)

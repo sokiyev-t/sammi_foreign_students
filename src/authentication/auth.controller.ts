@@ -1,43 +1,47 @@
-import { Controller, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login-user.dto';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Get,
+  Res,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
+import { AuthService } from './auth.service';
+import { AuthDto, RefreshTokenDto } from './dto';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { AuthEntity } from './entities';
+import { JwtVerifyGuard } from './guards/jwt-verify.guard';
 import { RegisterUsersDto } from './dto/register-user.dto';
-import { JwtAuthGuard } from './auth.guard';
-import { Roles } from './roles.decorator';
-import { Role } from './role.enum';
-import { Public } from './public.decorator';
+import { Roles } from './decorators/roles.decorator';
+import { Public } from './decorators/public.decorator';
+import { Role } from '@prisma/client';
 
-@Controller('/auth')
-@UseGuards(JwtAuthGuard)
+@ApiTags('auth')
+@Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/login')
-  @Public()
-  async login(
-    @Req() request: Request,
-    @Res() response: Response,
-    @Body() loginDto: LoginDto,
-  ): Promise<any> {
-    try {
-      const result = await this.authService.login(loginDto);
-      return response.status(200).json({
-        status: 'Ok!',
-        message: 'Successfully login!',
-        result: result,
-      });
-    } catch (err) {
-      //err
-      console.log(err);
-      return response.status(500).json({
-        status: 'Error!',
-        message: 'Internal Server Error!',
-      });
-    }
+  @ApiOkResponse({ type: AuthEntity })
+  @Post('login')
+  async login(@Body() data: AuthDto) {
+    return new AuthEntity(await this.authService.login(data));
   }
 
-  @Post('/add-admin')
+  @ApiOkResponse({ type: AuthEntity })
+  @UseGuards(JwtVerifyGuard)
+  @Post('refresh')
+  async refresh(@Req() request, @Body() data: RefreshTokenDto) {
+    const userId = request.user.sub;
+    return new AuthEntity(
+      await this.authService.refresh(userId, data.refreshToken),
+    );
+  }
+
+  @Post('add-admin')
   @Public()
   async addAdmin(
     @Req() request: Request,
@@ -60,7 +64,7 @@ export class AuthController {
     }
   }
 
-  @Post('/register')
+  @Post('register')
   @Roles(Role.ADMIN)
   async register(
     @Req() request: Request,

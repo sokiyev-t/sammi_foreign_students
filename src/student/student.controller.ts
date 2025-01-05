@@ -16,9 +16,9 @@ import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from '@prisma/client';
 import { CreateExtraStudentDto } from './dto/create-extra-student.dto';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/authentication/auth.guard';
-import { Roles } from 'src/authentication/roles.decorator';
-import { Role } from 'src/authentication/role.enum';
+import { JwtAuthGuard } from 'src/authentication/guards';
+import { Roles } from 'src/authentication/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('student')
 @UseGuards(JwtAuthGuard)
