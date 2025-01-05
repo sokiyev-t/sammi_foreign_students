@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Чтение данных из файла data.json
-  const filePath = '/home/doossee/sammi_foreign_students/prisma/data.json';
+  const filePath = '/home/doston_user/sammi_foreign_students/prisma/data.json';
   const rawData = fs.readFileSync(filePath, 'utf-8');
   const studentsData = JSON.parse(rawData);
 
