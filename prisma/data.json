@@ -1147,7 +1147,7 @@
                 "visaNumber": null,
                 "visaType": {
                     "connect": {
-                        "id": "tourist_visa"
+                        "name": "tourist_visa"
                     }
                 },
                 "visaEnd": "2025-08-24T00:00:00Z",
@@ -1715,7 +1715,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "IND"
+                "name": "India"
             }
         }
     },
@@ -2274,7 +2274,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -4682,7 +4682,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -16894,7 +16894,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -17969,7 +17969,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -18098,7 +18098,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -18356,7 +18356,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -19775,7 +19775,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -19818,7 +19818,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -21022,7 +21022,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -22656,7 +22656,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -23206,7 +23206,7 @@
                 "visaNumber": null,
                 "visaType": {
                     "connect": {
-                        "id": "business_visa"
+                        "name": "business_visa"
                     }
                 },
                 "visaEnd": "2025-02-14T00:00:00Z",
@@ -23602,7 +23602,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -41986,7 +41986,7 @@
         
         "consultant": {
             "connect": {
-                "name": "Усманов Самад"
+                "name": "Usmanov Samad"
             }
         },
         "passportSeries": "M",
@@ -44027,7 +44027,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -54820,7 +54820,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -55336,7 +55336,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Indian"
+                "name": "India"
             }
         }
     },
@@ -56798,7 +56798,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -65441,7 +65441,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -68451,7 +68451,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -72622,7 +72622,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -74944,7 +74944,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -83200,7 +83200,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
@@ -85952,7 +85952,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Indian"
+                "name": "India"
             }
         }
     },
@@ -86812,7 +86812,7 @@
         ],
         "citizen": {
             "connect": {
-                "name": "Pakistani"
+                "name": "Pakistan"
             }
         }
     },
