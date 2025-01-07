@@ -11,7 +11,7 @@ const paginate: PaginateFunction = paginator({ perPage: 10 });
 
 @Injectable()
 export class StudentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Create a new consultant record
   async createExtraStudents(data: CreateExtraStudentDto[]) {
@@ -81,7 +81,7 @@ export class StudentService {
       ...(visaStart && visaEnd && {
         visas: {
           some: {
-            visaStart: { 
+            visaStart: {
               gte: new Date(visaStart),
             },
             visaEnd: {
@@ -128,10 +128,14 @@ export class StudentService {
     };
 
     const include: any = {
-      visas: true,
+      visas: {
+        include: {
+          visaType: true,
+        }
+      },
       registrations: true,
       consultant: true,
-      citizen: true, 
+      citizen: true,
     };
 
     return await paginate(
