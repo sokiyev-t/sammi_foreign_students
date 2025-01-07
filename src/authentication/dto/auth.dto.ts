@@ -13,7 +13,6 @@ export class AuthDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(8)
   @ApiProperty({ example: '123qazwsx' })
   readonly password: string;
 }
