@@ -6,19 +6,20 @@ import {
   Param,
   Delete,
   Post,
-  Req,
   Res,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from '@prisma/client';
 import { CreateExtraStudentDto } from './dto/create-extra-student.dto';
-import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/authentication/guards';
+import { Response } from 'express';
+import { JwtAuthGuard, RolesGuard } from 'src/authentication/guards';
 import { Roles } from 'src/authentication/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { StudentQueryParamsDto } from './dto/query-params.dto';
 
 @Controller('student')
 @UseGuards(JwtAuthGuard)
@@ -28,7 +29,6 @@ export class StudentController {
   @Post('/create-many')
   @Roles(Role.ADMIN, Role.EDITOR)
   async createMany(
-    @Req() request: Request,
     @Res() response: Response,
     @Body() students: CreateExtraStudentDto[],
   ) {
@@ -57,48 +57,54 @@ export class StudentController {
   }
 
   @Post('/create-ex-student')
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.EDITOR)
-  createExStudent(
+  async createExStudent(
     @Body() createStudentDto: CreateExtraStudentDto,
   ): Promise<Student> {
-    return this.studentService.createExtraStudent(createStudentDto);
+    return await this.studentService.createExtraStudent(createStudentDto);
   }
 
   @Post()
-  create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
-    return this.studentService.createStudent(createStudentDto);
+  async create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
+    return await this.studentService.createStudent(createStudentDto);
   }
 
   @Get()
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
-  findAll(): Promise<Student[]> {
-    return this.studentService.findAll();
+  async findAll(@Query() params: StudentQueryParamsDto) {
+    return await this.studentService.findAll(params);
   }
 
   @Get(':id')
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
-  findOne(@Param('id') id: string): Promise<Student | null> {
-    return this.studentService.findOne(id);
+  async findOne(@Param('id') id: string): Promise<Student | null> {
+    return await this.studentService.findOne(id);
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.EDITOR)
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateStudentDto: UpdateStudentDto,
   ): Promise<Student> {
-    return this.studentService.update(id, updateStudentDto);
+    return await this.studentService.update(id, updateStudentDto);
   }
 
   @Delete('delete-all')
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.EDITOR)
-  removeAll() {
-    return this.studentService.deleteAll();
+  async removeAll() {
+    return await this.studentService.deleteAll();
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.EDITOR)
-  remove(@Param('id') id: string): Promise<Student> {
-    return this.studentService.remove(id);
+  async remove(@Param('id') id: string): Promise<Student> {
+    return await this.studentService.remove(id);
   }
 }

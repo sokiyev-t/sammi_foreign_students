@@ -26,7 +26,6 @@ export class UserService {
     });
   }
 
-  // Delete an user type by ID
   async deleteUser(id: string) {
     const existing = await this.prisma.user.findUnique({ where: { id: id } });
     if (existing && existing.username == 'admin') {

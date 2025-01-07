@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
-// import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { Student } from '@prisma/client';
+import { Prisma, Student } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { CreateExtraStudentDto } from './dto/create-extra-student.dto';
+import { StudentQueryParamsDto } from './dto/query-params.dto';
+import { PaginateFunction, paginator } from 'src/common/pagination/paginator';
+
+const paginate: PaginateFunction = paginator({ perPage: 10 });
 
 @Injectable()
 export class StudentService {
@@ -55,37 +58,108 @@ export class StudentService {
     });
   }
 
-  async findAll(): Promise<Student[]> {
-    return this.prisma.student.findMany({
-      include: {
-        visas: true, // Include all related Visa records
-        registrations: true, // Include all related Registration records
-        consultant: true, // Include the related Consultant record
-        citizen: true, // Include the related Citizen record
-      },
-    });
+  async findAll(params: StudentQueryParamsDto) {
+    const {
+      search,
+      page,
+      perPage,
+      visaStart,
+      visaEnd,
+      createdDate,
+      byId,
+      byCreatedDate,
+    } = params;
+
+    const where: Prisma.StudentWhereInput = {
+      ...(search && {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { middleName: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(visaStart && visaEnd && {
+        visas: {
+          some: {
+            visaStart: { 
+              gte: new Date(visaStart),
+            },
+            visaEnd: {
+              lte: new Date(visaEnd)
+            }
+          }
+        }
+      }),
+      ...(visaStart && !visaEnd && {
+        visas: {
+          some: {
+            visaStart: {
+              gte: new Date(visaStart),
+            },
+            visaEnd: {
+              lte: new Date(visaStart.getDate() + 3),
+            }
+          }
+        }
+      }),
+      ...(visaEnd && !visaStart && {
+        visas: {
+          some: {
+            visaStart: {
+              gte: new Date(visaEnd.getDate() - 3),
+            },
+            visaEnd: {
+              lte: new Date(visaEnd)
+            }
+          }
+        }
+      }),
+      ...(createdDate && {
+        createdAt: {
+          gte: new Date(createdDate.setHours(0, 0, 0, 0)),
+          lt: new Date(createdDate.setHours(23, 59, 59, 999)),
+        },
+      }),
+    };
+
+    const orderBy: Prisma.StudentOrderByWithRelationInput = {
+      ...(byId && { id: byId }),
+      ...(byCreatedDate && { createdAt: byCreatedDate }),
+    };
+
+    const include: any = {
+      visas: true,
+      registrations: true,
+      consultant: true,
+      citizen: true, 
+    };
+
+    return await paginate(
+      this.prisma.student,
+      { where, orderBy, include },
+      { page, perPage },
+    );
   }
 
   async findOne(id: string): Promise<Student | null> {
-    return this.prisma.student.findUnique({
+    return await this.prisma.student.findUnique({
       where: { id },
     });
   }
 
   async update(id: string, data: UpdateStudentDto): Promise<Student> {
-    return this.prisma.student.update({
+    return await this.prisma.student.update({
       where: { id },
       data,
     });
   }
 
-  // Delete a consultant by ID
   async deleteAll() {
-    return this.prisma.student.deleteMany({});
+    return await this.prisma.student.deleteMany({});
   }
 
   async remove(id: string): Promise<Student> {
-    return this.prisma.student.delete({
+    return await this.prisma.student.delete({
       where: { id },
     });
   }

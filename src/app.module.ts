@@ -8,9 +8,17 @@ import { ConsultantModule } from './consultant/consultant.module';
 import { RegistrationModule } from './registration/registration.module';
 import { SettingsModule } from './settings/settings.module';
 import { StudentModule } from './student/student.module';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+     JwtModule.register({
+      global: true,
+      secret: process.env.JWT_ACCESS_SECRET,
+      signOptions: { expiresIn: process.env.JWT_ACCESS_EXPIRE },
+    }),
     UserModule,
     AuthModule,
     CitizenModule,

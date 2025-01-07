@@ -3,12 +3,11 @@ import {
   Delete,
   Get,
   Param,
-  Req,
   Res,
   UseGuards,
 } from '@nestjs/common'; //UseGuards
 import { UserService } from './user.service';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { JwtAuthGuard } from 'src/authentication/guards';
 import { Roles } from 'src/authentication/decorators/roles.decorator';
 import { Role } from '@prisma/client';
@@ -21,7 +20,6 @@ export class UserController {
   @Get()
   @Roles(Role.ADMIN)
   async getAllUsers(
-    @Req() request: Request,
     @Res() response: Response,
   ): Promise<any> {
     try {
