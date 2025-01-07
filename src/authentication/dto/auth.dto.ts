@@ -2,12 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsString,
   IsNotEmpty,
-  IsPhoneNumber,
   MinLength,
 } from 'class-validator';
 
 export class AuthDto {
-  @IsPhoneNumber('UZ')
+  @IsString()
   @IsNotEmpty()
   @ApiProperty({ example: 'proffesor_xvaier' })
   readonly username: string;
