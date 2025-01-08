@@ -26,6 +26,10 @@ export class UserService {
     });
   }
 
+  async findOne(id: string) {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
+
   async deleteUser(id: string) {
     const existing = await this.prisma.user.findUnique({ where: { id: id } });
     if (existing && existing.username == 'admin') {

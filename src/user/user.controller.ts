@@ -3,6 +3,7 @@ import {
   Delete,
   Get,
   Param,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common'; //UseGuards
@@ -16,6 +17,12 @@ import { Role } from '@prisma/client';
 @UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get('me')
+  async getMe(@Req() request) {
+    const userId = request.user.sub;
+    return await this.userService.findOne(userId);
+  }
 
   @Get()
   @Roles(Role.ADMIN)
