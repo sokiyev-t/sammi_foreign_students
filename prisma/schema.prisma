@@ -26,6 +26,8 @@ model User {
   username String @unique @db.VarChar(45)
   email    String @unique @db.VarChar(45)
   role     Role   @default(VIEWER)
+  
+  createdAt DateTime @default(now())
 }
 
 model Citizen {
@@ -89,6 +91,8 @@ model Student {
 
   citizen   Citizen @relation(fields: [citizenId], references: [id])
   citizenId String
+
+  createdAt DateTime @default(now())
 }
 
 model Settings {

@@ -66,8 +66,8 @@ export class StudentController {
   }
 
   @Post()
-  async create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
-    return await this.studentService.createStudent(createStudentDto);
+  async create(@Body() data: CreateStudentDto): Promise<Student> {
+    return await this.studentService.createStudent(data);
   }
 
   @Get()
