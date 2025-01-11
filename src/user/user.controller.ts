@@ -35,6 +35,7 @@ export class UserController {
     @Body() data: ChangePasswordDto
   ) {
     const userId = request.user.sub;
+    console.log(userId);
     return await this.userService.changeMyPassword(userId, data);
   }
 

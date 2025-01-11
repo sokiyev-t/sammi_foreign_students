@@ -71,14 +71,17 @@ export class UserService {
 
   async changeMyPassword(id: string, data: ChangePasswordDto) {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id } });
+    const isPasswordValid = await bcrypt.compare(data.oldPassword, user.password);
 
-    const oldHashedPass = await bcrypt.hash(data.oldPassword, 10);
-    const newHashedPass = await bcrypt.hash(data.newPassword, 10);
-
-    if (oldHashedPass !== user.password) {
-      throw new BadRequestException('Password does not match');
+    if (!isPasswordValid) {
+      throw new BadRequestException('The old password is incorrect.');
     }
 
-    return await this.prisma.user.update({ where: { id }, data: { password: newHashedPass } });
+    return await this.prisma.user.update({
+      where: { id },
+      data: { 
+        password: await bcrypt.hash(data.newPassword, 10)
+      } 
+    });
   }
 }
