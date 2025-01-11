@@ -1,13 +1,14 @@
-// settings/dto/create-settings.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate } from 'class-validator';
+import { IsInt, IsNotEmpty } from 'class-validator';
 
 export class CreateSettingsDto {
+  @IsInt()
+  @IsNotEmpty()
   @ApiProperty()
-  @IsDate()
-  visaTime: Date;
+  visaTime: number;
 
+  @IsInt()
+  @IsNotEmpty()
   @ApiProperty()
-  @IsDate()
-  registrationTime: Date;
+  registrationTime: number;
 }

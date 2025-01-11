@@ -26,7 +26,7 @@ model User {
   username String @unique @db.VarChar(45)
   email    String @unique @db.VarChar(45)
   role     Role   @default(VIEWER)
-  
+
   createdAt DateTime @default(now())
 }
 
@@ -43,46 +43,46 @@ model VisaType {
 }
 
 model Consultant {
-  id          String @id @default(uuid())
-  name        String @unique @db.VarChar(65)
-  phoneNumber String? @db.VarChar(65) // Может быть null
+  id          String    @id @default(uuid())
+  name        String    @unique @db.VarChar(65)
+  phoneNumber String?   @db.VarChar(65) // Может быть null
   Student     Student[]
 }
 
 model Visa {
-  id         String   @id @default(uuid())
-  visaSeries String?  @db.VarChar(65) // Может быть null
-  visaNumber String?  @db.VarChar(65) // Может быть null
+  id         String    @id @default(uuid())
+  visaSeries String?   @db.VarChar(65) // Может быть null
+  visaNumber String?   @db.VarChar(65) // Может быть null
   visaStart  DateTime? // Может быть null
   visaEnd    DateTime? // Может быть null
-  visaType   VisaType @relation(fields: [visaTypeId], references: [id])
+  visaType   VisaType  @relation(fields: [visaTypeId], references: [id])
   visaTypeId String
-  student    Student  @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  student    Student   @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   studentsId String
 }
 
 model Registration {
-  id                  String   @id @default(uuid())
-  registrationSeries  String?  @db.VarChar(45)  // Может быть null
-  registrationNumber  String?  @db.VarChar(45)  // Может быть null
-  registrationAddress String?  @db.VarChar(200) // Может быть null
+  id                  String    @id @default(uuid())
+  registrationSeries  String?   @db.VarChar(45) // Может быть null
+  registrationNumber  String?   @db.VarChar(45) // Может быть null
+  registrationAddress String?   @db.VarChar(200) // Может быть null
   registrationStart   DateTime? // Может быть null
   registrationEnd     DateTime? // Может быть null
-  student             Student  @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  student             Student   @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   studentsId          String
 }
 
 model Student {
-  id              String @id @default(uuid())
-  phoneNumber     String? @db.VarChar(90) // Может быть null
-  firstName       String?  @db.VarChar(90)
-  lastName        String? @db.VarChar(90) // Может быть null
-  middleName      String? @db.VarChar(90) // Может быть null
+  id          String  @id @default(uuid())
+  phoneNumber String? @db.VarChar(90) // Может быть null
+  firstName   String? @db.VarChar(90)
+  lastName    String? @db.VarChar(90) // Может быть null
+  middleName  String? @db.VarChar(90) // Может быть null
 
-  passportSeries  String?  @db.VarChar(40)
-  passportNumber  String?  @db.VarChar(40)
+  passportSeries  String?        @db.VarChar(40)
+  passportNumber  String?        @db.VarChar(40)
   passportExpired DateTime? // Может быть null
-  pinfl           String?  @db.VarChar(40)
+  pinfl           String?        @db.VarChar(40)
   visas           Visa[]
   registrations   Registration[]
 
@@ -96,8 +96,7 @@ model Student {
 }
 
 model Settings {
-  id               String   @id @default(uuid())
-  visaTime         DateTime
-  registrationTime DateTime
+  id               String @id @default(uuid())
+  visaTime         Int    @db.SmallInt
+  registrationTime Int    @db.SmallInt
 }
-
