@@ -15,7 +15,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from 'src/authentication/guards';
 import { Roles } from 'src/authentication/decorators/roles.decorator';
 import { Role } from '@prisma/client';
-import { UpdateUserDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('users')
@@ -37,6 +37,12 @@ export class UserController {
     const userId = request.user.sub;
     console.log(userId);
     return await this.userService.changeMyPassword(userId, data);
+  }
+
+  @Post()
+  @Roles(Role.ADMIN)
+  async create(@Body() data: CreateUserDto) {
+    return await this.userService.create(data);
   }
 
   @Get()
