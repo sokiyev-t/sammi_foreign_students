@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Req,
   Res,
   UseGuards,
@@ -15,11 +16,18 @@ import { JwtAuthGuard } from 'src/authentication/guards';
 import { Roles } from 'src/authentication/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { UpdateUserDto } from './dto/user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Post('me/change-password')
+  async changePassword(@Req() request, data: ChangePasswordDto) {
+    const userId = request.user.sub;
+    return await this.userService.changeMyPassword(userId, data);
+  }
 
   @Get('me')
   async getMe(@Req() request) {

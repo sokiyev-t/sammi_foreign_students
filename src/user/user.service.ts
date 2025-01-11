@@ -1,12 +1,12 @@
 import { PrismaService } from 'src/prisma.service';
-import { User } from './user.model';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcryptjs';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(data: CreateUserDto) {
     try {
@@ -67,5 +67,18 @@ export class UserService {
     return this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  async changeMyPassword(id: string, data: ChangePasswordDto) {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id } });
+
+    const oldHashedPass = await bcrypt.hash(data.oldPassword, 10);
+    const newHashedPass = await bcrypt.hash(data.newPassword, 10);
+
+    if (oldHashedPass !== user.password) {
+      throw new BadRequestException('Password does not match');
+    }
+
+    return await this.prisma.user.update({ where: { id }, data: { password: newHashedPass } });
   }
 }
