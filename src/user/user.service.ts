@@ -72,8 +72,15 @@ export class UserService {
   async changeMyPassword(id: string, data: ChangePasswordDto) {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id } });
 
+    console.log(data.oldPassword);
+    console.log(data.newPassword);
+
     const oldHashedPass = await bcrypt.hash(data.oldPassword, 10);
     const newHashedPass = await bcrypt.hash(data.newPassword, 10);
+
+    console.log(oldHashedPass);
+    console.log(newHashedPass);
+    console.log(user.password);
 
     if (oldHashedPass !== user.password) {
       throw new BadRequestException('Password does not match');

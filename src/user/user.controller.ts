@@ -23,16 +23,19 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('me/change-password')
-  async changePassword(@Req() request, data: ChangePasswordDto) {
-    const userId = request.user.sub;
-    return await this.userService.changeMyPassword(userId, data);
-  }
-
   @Get('me')
   async getMe(@Req() request) {
     const userId = request.user.sub;
     return await this.userService.findOne(userId);
+  }
+
+  @Patch('me/change-password')
+  async changePassword(
+    @Req() request, 
+    @Body() data: ChangePasswordDto
+  ) {
+    const userId = request.user.sub;
+    return await this.userService.changeMyPassword(userId, data);
   }
 
   @Get()
