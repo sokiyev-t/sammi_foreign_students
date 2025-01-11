@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsDate, IsString, ValidateNested } from 'class-validator';
 import { CreateRegistrationConnectDto } from 'src/registration/dto/create-registration.dto';
 import { CreateVisaConnectDto } from 'src/visa/dto/create-visa.dto';
 
@@ -45,8 +46,14 @@ export class CreateExtraStudentDto {
   consultantId: string;
 
   @ApiProperty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateVisaConnectDto)
   visas: CreateVisaConnectDto[];
 
   @ApiProperty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateRegistrationConnectDto)
   registrations: CreateRegistrationConnectDto[];
 }
