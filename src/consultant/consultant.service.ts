@@ -27,16 +27,16 @@ export class ConsultantService {
   }
   // Create a new consultant record
   async createConsultant(data: CreateConsultantDto) {
-    this.prisma.consultant
-      .create({
-        data,
-      })
-      .then((data) => {
-        return data;
-      })
-      .catch((e) => {
-        throw e;
-      });
+    try {
+      return await this.prisma.consultant.create({ data });
+    } catch (error) {
+      if (error.code === 'P2002') {
+        throw new Error(
+          'Duplicate record found. Please ensure all values are unique.',
+        );
+      }
+      throw error;
+    }
   }
 
   // Get all consultants

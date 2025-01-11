@@ -1,4 +1,3 @@
-// consultant/consultant.module.ts
 import { Module } from '@nestjs/common';
 import { ConsultantService } from './consultant.service';
 import { ConsultantController } from './consultant.controller';

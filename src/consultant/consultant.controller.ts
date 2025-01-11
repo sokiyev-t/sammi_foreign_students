@@ -58,8 +58,8 @@ export class ConsultantController {
 
   @Post()
   @Roles(Role.ADMIN, Role.EDITOR)
-  create(@Body() createConsultantDto: CreateConsultantDto) {
-    return this.consultantService.createConsultant(createConsultantDto);
+  async create(@Body() data: CreateConsultantDto) {
+    return await this.consultantService.createConsultant(data);
   }
 
   @Get()
@@ -76,11 +76,11 @@ export class ConsultantController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.EDITOR)
-  update(
+  async update(
     @Param('id') id: string,
-    @Body() updateConsultantDto: UpdateConsultantDto,
+    @Body() data: UpdateConsultantDto,
   ) {
-    return this.consultantService.updateConsultant(id, updateConsultantDto);
+    return await this.consultantService.updateConsultant(id, data);
   }
 
   @Delete('delete-all')
