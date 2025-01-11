@@ -1,8 +1,10 @@
 import {
+    Body,
   Controller,
   Delete,
   Get,
   Param,
+  Patch,
   Req,
   Res,
   UseGuards,
@@ -12,6 +14,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from 'src/authentication/guards';
 import { Roles } from 'src/authentication/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { UpdateUserDto } from './dto/user.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -45,9 +48,18 @@ export class UserController {
     }
   }
 
+  @Patch(':id')
+  @Roles(Role.ADMIN)
+  async update(
+    @Param('id') id: string,
+    @Body() data: UpdateUserDto,
+  ) {
+    return await this.userService.update(id, data)
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string) {
-    return this.userService.deleteUser(id);
+  async remove(@Param('id') id: string) {
+    return await this.userService.deleteUser(id);
   }
 }
