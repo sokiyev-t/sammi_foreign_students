@@ -15,7 +15,6 @@ async function main() {
     update: {},
     create: {
       username: 'admin',
-      email: 'admin@admin.admin',
       password: await bcrypt.hash('admin', 10),
       name: 'Admin',
       role: $Enums.Role.ADMIN,
