@@ -1,51 +1,54 @@
 // visa/dto/create-visa.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsDateString, IsInt } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsDateString, IsInt, IsDate } from 'class-validator';
 
 export class CreateVisaDto {
-  @ApiProperty()
   @IsString()
+  @ApiProperty()
   visaSeries: string;
 
-  @ApiProperty()
   @IsString()
+  @ApiProperty()
   visaNumber: string;
 
-  @ApiProperty()
   @IsDateString()
+  @ApiProperty()
   visaStart: Date;
 
-  @ApiProperty()
   @IsDateString()
+  @ApiProperty()
   visaEnd: Date;
 
+  @IsString()
   @ApiProperty()
-  @IsInt()
   visaTypeId: string;
 
+  @IsString()
   @ApiProperty()
-  @IsInt()
   studentsId: string;
 }
 
 export class CreateVisaConnectDto {
-  @ApiProperty()
   @IsString()
+  @ApiProperty()
   visaSeries: string;
 
   @ApiProperty()
   @IsString()
   visaNumber: string;
 
+  @IsDate()
+  @Type(() => Date)
   @ApiProperty()
-  @IsDateString()
   visaStart: Date;
 
+  @IsDate()
+  @Type(() => Date)
   @ApiProperty()
-  @IsDateString()
   visaEnd: Date;
 
+  @IsString()
   @ApiProperty()
-  @IsInt()
   visaTypeId: string;
 }

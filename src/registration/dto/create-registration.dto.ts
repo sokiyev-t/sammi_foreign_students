@@ -1,5 +1,5 @@
-// registration/dto/create-registration.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsString, IsDate } from 'class-validator';
 
 export class CreateRegistrationDto {
@@ -29,23 +29,25 @@ export class CreateRegistrationDto {
 }
 
 export class CreateRegistrationConnectDto {
-  @ApiProperty()
   @IsString()
+  @ApiProperty()
   registrationSeries: string;
 
-  @ApiProperty()
   @IsString()
+  @ApiProperty()
   registrationNumber: string;
 
-  @ApiProperty()
   @IsString()
+  @ApiProperty()
   registrationAddress: string;
 
-  @ApiProperty()
   @IsDate()
+  @Type(() => Date)
+  @ApiProperty()
   registrationStart: Date;
 
-  @ApiProperty()
   @IsDate()
+  @Type(() => Date)
+  @ApiProperty()
   registrationEnd: Date;
 }
