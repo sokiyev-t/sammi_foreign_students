@@ -20,11 +20,6 @@ export class RegisterUsersDto {
   name: string;
 
   @ApiProperty()
-  @IsString()
-  @Length(5, 10)
-  email: string;
-
-  @ApiProperty()
   @IsEnum(Role)
   role: Role;
 }

@@ -19,11 +19,6 @@ export class CreateUserDto {
   @ApiProperty()
   username: string;
 
-  @IsEmail()
-  @IsNotEmpty()
-  @ApiProperty()
-  email: string;
-
   @IsEnum(Role)
   @IsNotEmpty()
   @ApiProperty({
