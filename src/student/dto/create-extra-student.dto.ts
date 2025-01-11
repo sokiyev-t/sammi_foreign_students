@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsString } from 'class-validator';
-import { CreateRegistrationDto } from 'src/registration/dto/create-registration.dto';
-import { CreateVisaDto } from 'src/visa/dto/create-visa.dto';
+import { CreateRegistrationConnectDto } from 'src/registration/dto/create-registration.dto';
+import { CreateVisaConnectDto } from 'src/visa/dto/create-visa.dto';
 
 export class CreateExtraStudentDto {
   @ApiProperty()
@@ -38,15 +38,15 @@ export class CreateExtraStudentDto {
 
   @ApiProperty()
   @IsString()
-  citizenId: string; // Ensure this is a string
+  citizenId: string;
 
   @ApiProperty()
   @IsString()
-  consultantId: string; // Ensure this is a string
+  consultantId: string;
 
   @ApiProperty()
-  visas: CreateVisaDto[];
+  visas: CreateVisaConnectDto[];
 
   @ApiProperty()
-  registrations: CreateRegistrationDto[];
+  registrations: CreateRegistrationConnectDto[];
 }

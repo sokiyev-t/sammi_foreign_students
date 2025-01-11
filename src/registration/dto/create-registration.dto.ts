@@ -27,3 +27,25 @@ export class CreateRegistrationDto {
   @IsString()
   studentsId: string;
 }
+
+export class CreateRegistrationConnectDto {
+  @ApiProperty()
+  @IsString()
+  registrationSeries: string;
+
+  @ApiProperty()
+  @IsString()
+  registrationNumber: string;
+
+  @ApiProperty()
+  @IsString()
+  registrationAddress: string;
+
+  @ApiProperty()
+  @IsDate()
+  registrationStart: Date;
+
+  @ApiProperty()
+  @IsDate()
+  registrationEnd: Date;
+}

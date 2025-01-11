@@ -27,3 +27,25 @@ export class CreateVisaDto {
   @IsInt()
   studentsId: string;
 }
+
+export class CreateVisaConnectDto {
+  @ApiProperty()
+  @IsString()
+  visaSeries: string;
+
+  @ApiProperty()
+  @IsString()
+  visaNumber: string;
+
+  @ApiProperty()
+  @IsDateString()
+  visaStart: Date;
+
+  @ApiProperty()
+  @IsDateString()
+  visaEnd: Date;
+
+  @ApiProperty()
+  @IsInt()
+  visaTypeId: string;
+}
