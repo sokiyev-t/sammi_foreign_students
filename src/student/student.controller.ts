@@ -9,6 +9,7 @@ import {
   Res,
   UseGuards,
   Query,
+  Put,
 } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -20,6 +21,7 @@ import { JwtAuthGuard, RolesGuard } from 'src/authentication/guards';
 import { Roles } from 'src/authentication/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { StudentQueryParamsDto } from './dto/query-params.dto';
+import { UpdateExtraStudentDto } from './dto/update-extra-student.dto';
 
 @Controller('student')
 @UseGuards(JwtAuthGuard)
@@ -60,9 +62,9 @@ export class StudentController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.EDITOR)
   async createExStudent(
-    @Body() createStudentDto: CreateExtraStudentDto,
+    @Body() data: CreateExtraStudentDto,
   ): Promise<Student> {
-    return await this.studentService.createExtraStudent(createStudentDto);
+    return await this.studentService.createExtraStudent(data);
   }
 
   @Post()
@@ -89,9 +91,19 @@ export class StudentController {
   @Roles(Role.ADMIN, Role.EDITOR)
   async update(
     @Param('id') id: string,
-    @Body() updateStudentDto: UpdateStudentDto,
+    @Body() data: UpdateStudentDto,
   ): Promise<Student> {
-    return await this.studentService.update(id, updateStudentDto);
+    return await this.studentService.update(id, data);
+  }
+
+  @Put('/update-ex-student/:id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.EDITOR)
+  async updateExStudent(
+    @Param('id') id: string,
+    @Body() data: UpdateExtraStudentDto,
+  ): Promise<Student> {
+    return await this.studentService.updateExtraStudent(id, data);
   }
 
   @Delete('delete-all')
