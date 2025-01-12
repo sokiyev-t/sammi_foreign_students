@@ -6,6 +6,7 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { CreateExtraStudentDto } from './dto/create-extra-student.dto';
 import { StudentQueryParamsDto } from './dto/query-params.dto';
 import { PaginateFunction, paginator } from 'src/common/pagination/paginator';
+import { UpdateExtraStudentDto } from './dto/update-extra-student.dto';
 
 const paginate: PaginateFunction = paginator({ perPage: 10 });
 
@@ -148,6 +149,28 @@ export class StudentService {
   async findOne(id: string): Promise<Student | null> {
     return await this.prisma.student.findUnique({
       where: { id },
+    });
+  }
+
+  async updateExtraStudent(id: string, data: UpdateExtraStudentDto) {
+    const { registrations, visas, ...studentData } = data;
+    return this.prisma.student.update({
+      where: { id },
+      data: {
+        ...studentData,
+        registrations: {
+          deleteMany: { },
+          create: registrations,
+        },
+        visas: {
+          deleteMany: { },
+          create: visas,
+        },
+      },
+      include: {
+        registrations: true,
+        visas: true,
+      },
     });
   }
 
