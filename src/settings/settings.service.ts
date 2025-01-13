@@ -12,12 +12,13 @@ export class SettingsService {
   async createSettings(data: CreateSettingsDto) {
     const setData = await this.prisma.settings.findFirst();
 
-    if (!setData) {
+    if (setData) {
       return await this.prisma.settings.update({ 
         where: { id: setData.id },
         data
       });
     }
+
     return this.prisma.settings.create({
       data,
     });
