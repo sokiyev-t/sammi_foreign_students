@@ -17,15 +17,14 @@ export class SettingsService {
 
   // Get settings
   async findOne() {
-    return this.prisma.settings.findUnique({
-      where: { id: '1' }, // Assuming there's only one settings record
-    });
+    return await this.prisma.settings.findFirst();
   }
 
   // Update settings
   async updateSettings(data: UpdateSettingsDto) {
+    const setData = await this.prisma.settings.findFirst();
     return this.prisma.settings.update({
-      where: { id: '1' }, // Update the single settings record
+      where: { id: setData.id }, // Update the single settings record
       data,
     });
   }
