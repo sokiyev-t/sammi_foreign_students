@@ -19,6 +19,10 @@ export class CreateExtraStudentDto {
 
   @ApiProperty()
   @IsString()
+  groupName: string;
+
+  @ApiProperty()
+  @IsString()
   phoneNumber: string;
 
   @ApiProperty()

@@ -20,6 +20,11 @@ export class UpdateExtraStudentDto {
   @IsString()
   middleName?: string;
 
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  groupName?: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()

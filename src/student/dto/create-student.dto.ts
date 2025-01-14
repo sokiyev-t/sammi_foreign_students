@@ -16,6 +16,10 @@ export class CreateStudentDto {
 
   @ApiProperty()
   @IsString()
+  groupName: string;
+
+  @ApiProperty()
+  @IsString()
   phoneNumber: string;
 
   @ApiProperty()

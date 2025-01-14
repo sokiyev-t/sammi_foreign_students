@@ -20,6 +20,11 @@ export class UpdateStudentDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
+  groupName?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
   phoneNumber?: string;
 
   @ApiProperty()
