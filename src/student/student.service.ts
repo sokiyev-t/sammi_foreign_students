@@ -66,6 +66,8 @@ export class StudentService {
       perPage,
       visaStart,
       visaEnd,
+      registrationStart,
+      registrationEnd,
       createdDate,
       byId,
       byCreatedDate,
@@ -91,26 +93,14 @@ export class StudentService {
           }
         }
       }),
-      ...(visaStart && !visaEnd && {
-        visas: {
+    ...(registrationStart && registrationEnd && {
+        registrations: {
           some: {
-            visaStart: {
-              gte: new Date(visaStart),
+            registrationStart: {
+              gte: new Date(registrationStart),
             },
-            visaEnd: {
-              lte: new Date(visaStart.getDate() + 3),
-            }
-          }
-        }
-      }),
-      ...(visaEnd && !visaStart && {
-        visas: {
-          some: {
-            visaStart: {
-              gte: new Date(visaEnd.getDate() - 3),
-            },
-            visaEnd: {
-              lte: new Date(visaEnd)
+            registrationEnd: {
+              lte: new Date(registrationEnd)
             }
           }
         }

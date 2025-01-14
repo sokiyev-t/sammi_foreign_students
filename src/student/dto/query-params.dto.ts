@@ -28,6 +28,26 @@ export class StudentQueryParamsDto extends BaseQueryParamsDto {
   @Type(() => Date)
   @IsOptional()
   @ApiProperty({
+    description: 'Filter by visa start date in ISO format',
+    example: '2024-01-01T00:00:00.000Z',
+    required: false,
+  })
+  registrationStart?: Date;
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  @ApiProperty({
+    description: 'Filter by visa end date in ISO format',
+    example: '2024-01-01T00:00:00.000Z',
+    required: false,
+  })
+  registrationEnd?: Date;
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  @ApiProperty({
     description: 'Filter by user creation date in ISO format',
     example: '2024-01-01T00:00:00.000Z',
     required: false,
