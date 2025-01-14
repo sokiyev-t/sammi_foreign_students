@@ -59,6 +59,7 @@ export class StudentService {
     });
   }
 
+
   async findAll(params: StudentQueryParamsDto) {
     const {
       search,
@@ -71,10 +72,6 @@ export class StudentService {
       createdDate,
       byId,
       byCreatedDate,
-      byVisaStart,
-      byVisaEnd,
-      byRegistrationStart,
-      byRegistrationEnd
     } = params;
 
     const where: Prisma.StudentWhereInput = {
@@ -92,10 +89,10 @@ export class StudentService {
               gte: new Date(visaStart),
             },
             visaEnd: {
-              lte: new Date(visaEnd)
-            }
-          }
-        }
+              lte: new Date(visaEnd),
+            },
+          },
+        },
       }),
       ...(registrationStart && registrationEnd && {
         registrations: {
@@ -104,10 +101,10 @@ export class StudentService {
               gte: new Date(registrationStart),
             },
             registrationEnd: {
-              lte: new Date(registrationEnd)
-            }
-          }
-        }
+              lte: new Date(registrationEnd),
+            },
+          },
+        },
       }),
       ...(createdDate && {
         createdAt: {
@@ -120,17 +117,13 @@ export class StudentService {
     const orderBy: Prisma.StudentOrderByWithRelationInput = {
       ...(byId && { id: byId }),
       ...(byCreatedDate && { createdAt: byCreatedDate }),
-      ...(byVisaStart ? [{ visas: { _min: { visaStart: byVisaStart } } }] : []),
-      ...(byVisaEnd ? [{ visas: { _max: { visaEnd: byVisaEnd } } }] : []),
-      ...(byRegistrationStart ? [{ registrations: { _min: { registrationStart: byRegistrationStart } } }] : []),
-      ...(byRegistrationEnd ? [{ registrations: { _max: { registrationEnd: byRegistrationEnd } } }] : [])
     };
 
     const include: any = {
       visas: {
         include: {
           visaType: true,
-        }
+        },
       },
       registrations: true,
       consultant: true,
@@ -143,6 +136,7 @@ export class StudentService {
       { page, perPage },
     );
   }
+
 
   async findOne(id: string): Promise<Student | null> {
     return await this.prisma.student.findUnique({
