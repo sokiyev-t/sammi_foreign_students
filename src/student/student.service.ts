@@ -71,6 +71,10 @@ export class StudentService {
       createdDate,
       byId,
       byCreatedDate,
+      byVisaStart,
+      byVisaEnd,
+      byRegistrationStart,
+      byRegistrationEnd
     } = params;
 
     const where: Prisma.StudentWhereInput = {
@@ -93,7 +97,7 @@ export class StudentService {
           }
         }
       }),
-    ...(registrationStart && registrationEnd && {
+      ...(registrationStart && registrationEnd && {
         registrations: {
           some: {
             registrationStart: {
@@ -116,6 +120,10 @@ export class StudentService {
     const orderBy: Prisma.StudentOrderByWithRelationInput = {
       ...(byId && { id: byId }),
       ...(byCreatedDate && { createdAt: byCreatedDate }),
+      ...(byVisaStart ? [{ visas: { _min: { visaStart: byVisaStart } } }] : []),
+      ...(byVisaEnd ? [{ visas: { _max: { visaEnd: byVisaEnd } } }] : []),
+      ...(byRegistrationStart ? [{ registrations: { _min: { registrationStart: byRegistrationStart } } }] : []),
+      ...(byRegistrationEnd ? [{ registrations: { _max: { registrationEnd: byRegistrationEnd } } }] : [])
     };
 
     const include: any = {
@@ -149,11 +157,11 @@ export class StudentService {
       data: {
         ...studentData,
         registrations: {
-          deleteMany: { },
+          deleteMany: {},
           create: registrations,
         },
         visas: {
-          deleteMany: { },
+          deleteMany: {},
           create: visas,
         },
       },
