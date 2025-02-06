@@ -12,7 +12,7 @@ const paginate: PaginateFunction = paginator({ perPage: 10 });
 
 @Injectable()
 export class StudentService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   // Create a new consultant record
   async createExtraStudents(data: CreateExtraStudentDto[]) {
@@ -59,7 +59,6 @@ export class StudentService {
     });
   }
 
-
   async findAll(params: StudentQueryParamsDto) {
     const {
       search,
@@ -72,6 +71,8 @@ export class StudentService {
       createdDate,
       byId,
       byCreatedDate,
+      byVisaEnd,
+      byRegistrationEnd,
     } = params;
 
     const where: Prisma.StudentWhereInput = {
@@ -82,30 +83,32 @@ export class StudentService {
           { middleName: { contains: search, mode: 'insensitive' } },
         ],
       }),
-      ...(visaStart && visaEnd && {
-        visas: {
-          some: {
-            visaStart: {
-              gte: new Date(visaStart),
-            },
-            visaEnd: {
-              lte: new Date(visaEnd),
-            },
-          },
-        },
-      }),
-      ...(registrationStart && registrationEnd && {
-        registrations: {
-          some: {
-            registrationStart: {
-              gte: new Date(registrationStart),
-            },
-            registrationEnd: {
-              lte: new Date(registrationEnd),
+      ...(visaStart &&
+        visaEnd && {
+          visas: {
+            some: {
+              visaStart: {
+                gte: new Date(visaStart),
+              },
+              visaEnd: {
+                lte: new Date(visaEnd),
+              },
             },
           },
-        },
-      }),
+        }),
+      ...(registrationStart &&
+        registrationEnd && {
+          registrations: {
+            some: {
+              registrationStart: {
+                gte: new Date(registrationStart),
+              },
+              registrationEnd: {
+                lte: new Date(registrationEnd),
+              },
+            },
+          },
+        }),
       ...(createdDate && {
         createdAt: {
           gte: new Date(createdDate.setHours(0, 0, 0, 0)),
@@ -114,18 +117,26 @@ export class StudentService {
       }),
     };
 
-    const orderBy: Prisma.StudentOrderByWithRelationInput = {
-      ...(byId && { id: byId }),
-      ...(byCreatedDate && { createdAt: byCreatedDate }),
-    };
+    const orderBy: Prisma.StudentOrderByWithRelationInput[] = [];
 
-    const include: any = {
+    if (byId) orderBy.push({ id: byId });
+    if (byCreatedDate) orderBy.push({ createdAt: byCreatedDate });
+    if (byVisaEnd) orderBy.push({ visas: { _count: byVisaEnd } });
+    if (byRegistrationEnd)
+      orderBy.push({ registrations: { _count: byRegistrationEnd } });
+
+    const include: Prisma.StudentInclude = {
       visas: {
+        orderBy: { visaEnd: 'desc' }, // Берем последнюю визу
+        take: 1,
         include: {
           visaType: true,
         },
       },
-      registrations: true,
+      registrations: {
+        orderBy: { registrationEnd: 'desc' }, // Берем последнюю регистрацию
+        take: 1,
+      },
       consultant: true,
       citizen: true,
     };
@@ -136,7 +147,6 @@ export class StudentService {
       { page, perPage },
     );
   }
-
 
   async findOne(id: string): Promise<Student | null> {
     return await this.prisma.student.findUnique({
