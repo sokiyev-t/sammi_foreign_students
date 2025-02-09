@@ -26,7 +26,7 @@ import { UpdateExtraStudentDto } from './dto/update-extra-student.dto';
 @Controller('student')
 @UseGuards(JwtAuthGuard)
 export class StudentController {
-  constructor(private readonly studentService: StudentService) {}
+  constructor(private readonly studentService: StudentService) { }
 
   @Post('/create-many')
   @Roles(Role.ADMIN, Role.EDITOR)
@@ -77,6 +77,33 @@ export class StudentController {
   @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
   async findAll(@Query() params: StudentQueryParamsDto) {
     return await this.studentService.findAll(params);
+  }
+
+
+  @Get('/find-all-by-visa-end')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
+  async findAllByVisaEnd(
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string
+  ) {
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const perPageNumber = perPage ? parseInt(perPage, 10) : 10;
+
+    return await this.studentService.findAllByVisaEnd(pageNumber, perPageNumber);
+  }
+
+  @Get('/find-all-by-registration-end')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
+  async findAllByRegistrationEnd(
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string
+  ) {
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const perPageNumber = perPage ? parseInt(perPage, 10) : 10;
+
+    return await this.studentService.findAllByRegistrationEnd(pageNumber, perPageNumber);
   }
 
   @Get(':id')

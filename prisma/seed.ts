@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Чтение данных из файла data.json
-  const filePath = '/home/doston_user/sammi_foreign_students/prisma/data.json';
+  const filePath = '/home/doossee/sammi_foreign_students/prisma/data.json';
   const rawData = fs.readFileSync(filePath, 'utf-8');
   const studentsData = JSON.parse(rawData);
 
@@ -52,28 +52,28 @@ async function main() {
   const consultants = await prisma.consultant.createManyAndReturn({
     data: [
       {
-          "name": "AXIS"
+        "name": "AXIS"
       },
       {
-          "name": "Grand Alsion"
+        "name": "Grand Alsion"
       },
       {
-          "name": "MDHouse"
+        "name": "MDHouse"
       },
       {
-          "name": "Mughal"
+        "name": "Mughal"
       },
       {
-          "name": "Usmanov Samad"
+        "name": "Usmanov Samad"
       },
       {
-          "name": "Cosmos Moxsin"
+        "name": "Cosmos Moxsin"
       },
       {
-          "name": "Arsal"
+        "name": "Arsal"
       },
       {
-          "name": "Directly SamSMU"
+        "name": "Directly SamSMU"
       }
     ]
   });
@@ -81,13 +81,13 @@ async function main() {
   const visaTypes = await prisma.visaType.createManyAndReturn({
     data: [
       {
-          "name": "tourist_visa"
+        "name": "tourist_visa"
       },
       {
-          "name": "student_visa"
+        "name": "student_visa"
       },
       {
-          "name": "business_visa"
+        "name": "business_visa"
       }
     ]
   })

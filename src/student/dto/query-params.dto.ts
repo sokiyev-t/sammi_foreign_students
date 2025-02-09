@@ -62,40 +62,4 @@ export class StudentQueryParamsDto extends BaseQueryParamsDto {
     required: false,
   })
   readonly byCreatedDate?: SortOrder;
-
-  @IsEnum(SortOrder)
-  @IsOptional()
-  @ApiProperty({
-    description: 'Sort by Visa start date (ASC or DESC)',
-    enum: SortOrder,
-    required: false
-  })
-  readonly byVisaStart?: SortOrder;
-
-  @IsEnum(SortOrder)
-  @IsOptional()
-  @ApiProperty({
-    description: 'Sort by Visa start date (ASC or DESC)',
-    enum: SortOrder,
-    required: false
-  })
-  readonly byVisaEnd?: SortOrder;
-
-  @IsEnum(SortOrder)
-  @IsOptional()
-  @ApiProperty({
-    description: 'Sort by Visa start date (ASC or DESC)',
-    enum: SortOrder,
-    required: false
-  })
-  readonly byRegistrationStart?: SortOrder;
-
-  @IsEnum(SortOrder)
-  @IsOptional()
-  @ApiProperty({
-    description: 'Sort by Visa start date (ASC or DESC)',
-    enum: SortOrder,
-    required: false
-  })
-  readonly byRegistrationEnd?: SortOrder;
 }
