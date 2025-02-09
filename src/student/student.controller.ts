@@ -22,7 +22,6 @@ import { Roles } from 'src/authentication/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { StudentQueryParamsDto } from './dto/query-params.dto';
 import { UpdateExtraStudentDto } from './dto/update-extra-student.dto';
-import { SortOrder } from 'src/common/dto/query-params.dto';
 
 @Controller('student')
 @UseGuards(JwtAuthGuard)
@@ -87,13 +86,13 @@ export class StudentController {
   async findAllByVisaEnd(
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
-    @Query('order') order?: 'ASC' | 'DESC'
+    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
   ) {
     const pageNumber = page ? parseInt(page, 10) : 1;
     const perPageNumber = perPage ? parseInt(perPage, 10) : 10;
-    const orderBy = order ? order.toUpperCase() : 'DESC';
+    const order = sortOrder ? sortOrder.toUpperCase() : 'DESC';
 
-    return await this.studentService.findAllByVisaEnd(pageNumber, perPageNumber, orderBy);
+    return await this.studentService.findAllByVisaEnd(pageNumber, perPageNumber, order);
   }
 
   @Get('/find-all-by-registration-end')
@@ -102,13 +101,13 @@ export class StudentController {
   async findAllByRegistrationEnd(
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
-    @Query('order') order?: 'ASC' | 'DESC'
+    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
   ) {
     const pageNumber = page ? parseInt(page, 10) : 1;
     const perPageNumber = perPage ? parseInt(perPage, 10) : 10;
-    const orderBy = order ? order.toUpperCase() : 'DESC';
+    const order = sortOrder ? sortOrder.toUpperCase() : 'DESC';
 
-    return await this.studentService.findAllByRegistrationEnd(pageNumber, perPageNumber, orderBy);
+    return await this.studentService.findAllByRegistrationEnd(pageNumber, perPageNumber, order);
   }
 
   @Get(':id')

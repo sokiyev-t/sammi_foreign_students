@@ -138,11 +138,11 @@ export class StudentService {
     );
   }
 
-  async findAllByVisaEnd(page: number = 1, perPage: number = 10, order: string = 'DESC') {
+  async findAllByVisaEnd(page: number = 1, perPage: number = 10, order: string = 'desc') {
     const offset = (page - 1) * perPage;
+    const sortOrder = order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
-    // Fetch paginated students
-    const students = await this.prisma.$queryRaw<any[]>`
+    const query = `
       SELECT 
         s.*, 
         v.latest_visa_end,
@@ -186,9 +186,11 @@ export class StudentService {
       LEFT JOIN "Consultant" c ON c.id = s."consultantId"
       LEFT JOIN "Citizen" cz ON cz.id = s."citizenId"
       GROUP BY s.id, v.latest_visa_end, c.id, cz.id
-      ORDER BY v.latest_visa_end ${order} NULLS LAST
+      ORDER BY v.latest_visa_end ${sortOrder} NULLS LAST
       LIMIT ${perPage} OFFSET ${offset};
     `;
+
+    const students = await this.prisma.$queryRawUnsafe<any[]>(query);
 
     // Get total count of students
     const totalStudents = await this.prisma.$queryRaw<{ count: bigint }[]>`
@@ -214,9 +216,9 @@ export class StudentService {
 
   async findAllByRegistrationEnd(page: number = 1, perPage: number = 10, order: string = 'DESC') {
     const offset = (page - 1) * perPage;
+    const sortOrder = order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
-    // Fetch paginated students with related data
-    const students = await this.prisma.$queryRaw<any[]>`
+    const query = `
       SELECT 
         s.*, 
         r.latest_registration_end,
@@ -260,9 +262,11 @@ export class StudentService {
       LEFT JOIN "Consultant" c ON c.id = s."consultantId"
       LEFT JOIN "Citizen" cz ON cz.id = s."citizenId"
       GROUP BY s.id, r.latest_registration_end, c.id, cz.id
-      ORDER BY r.latest_registration_end ${order} NULLS LAST
+      ORDER BY r.latest_registration_end ${sortOrder} NULLS LAST
       LIMIT ${perPage} OFFSET ${offset};
     `;
+
+    const students = await this.prisma.$queryRawUnsafe<any[]>(query);
 
     // Get total count of students
     const totalStudents = await this.prisma.$queryRaw<{ count: bigint }[]>`
