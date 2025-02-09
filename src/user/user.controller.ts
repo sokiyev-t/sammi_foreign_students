@@ -75,6 +75,15 @@ export class UserController {
     return await this.userService.update(id, data)
   }
 
+  @Patch(':id/update-password')
+  @Roles(Role.ADMIN)
+  async updatePassword(
+    @Param('id') id: string,
+    @Body() password: string
+  ) {
+    return await this.userService.updatePassword(id, password)
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN)
   async remove(@Param('id') id: string) {

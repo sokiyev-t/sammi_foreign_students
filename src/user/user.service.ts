@@ -1,12 +1,16 @@
 import { PrismaService } from 'src/prisma.service';
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcryptjs';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(data: CreateUserDto) {
     try {
@@ -47,12 +51,31 @@ export class UserService {
       });
     } catch (error) {
       if (error.code === 'P2002') {
-        throw new BadRequestException('User with given unique data already exists');
+        throw new BadRequestException(
+          'User with given unique data already exists',
+        );
       }
       if (error.code === 'P2025') {
-        throw new BadRequestException('User with given ID does not exist')
+        throw new BadRequestException('User with given ID does not exist');
       }
       throw error;
+    }
+  }
+
+  async updatePassword(id: string, password: string) {
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      return await this.prisma.user.update({
+        where: { id },
+        data: {
+          password: hashedPassword,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new BadRequestException('User with given ID does not exist');
+      }
     }
   }
 
@@ -71,7 +94,10 @@ export class UserService {
 
   async changeMyPassword(id: string, data: ChangePasswordDto) {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id } });
-    const isPasswordValid = await bcrypt.compare(data.oldPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      data.oldPassword,
+      user.password,
+    );
 
     if (!isPasswordValid) {
       throw new BadRequestException('The old password is incorrect.');
@@ -79,9 +105,9 @@ export class UserService {
 
     return await this.prisma.user.update({
       where: { id },
-      data: { 
-        password: await bcrypt.hash(data.newPassword, 10)
-      } 
+      data: {
+        password: await bcrypt.hash(data.newPassword, 10),
+      },
     });
   }
 }
