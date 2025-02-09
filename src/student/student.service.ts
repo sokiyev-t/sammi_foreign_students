@@ -138,7 +138,7 @@ export class StudentService {
     );
   }
 
-  async findAllByVisaEnd(page: number = 1, perPage: number = 10) {
+  async findAllByVisaEnd(page: number = 1, perPage: number = 10, order: string = 'DESC') {
     const offset = (page - 1) * perPage;
 
     // Fetch paginated students
@@ -186,7 +186,7 @@ export class StudentService {
       LEFT JOIN "Consultant" c ON c.id = s."consultantId"
       LEFT JOIN "Citizen" cz ON cz.id = s."citizenId"
       GROUP BY s.id, v.latest_visa_end, c.id, cz.id
-      ORDER BY v.latest_visa_end DESC NULLS LAST
+      ORDER BY v.latest_visa_end ${order} NULLS LAST
       LIMIT ${perPage} OFFSET ${offset};
     `;
 
@@ -212,7 +212,7 @@ export class StudentService {
     };
   }
 
-  async findAllByRegistrationEnd(page: number = 1, perPage: number = 10) {
+  async findAllByRegistrationEnd(page: number = 1, perPage: number = 10, order: string = 'DESC') {
     const offset = (page - 1) * perPage;
 
     // Fetch paginated students with related data
@@ -260,7 +260,7 @@ export class StudentService {
       LEFT JOIN "Consultant" c ON c.id = s."consultantId"
       LEFT JOIN "Citizen" cz ON cz.id = s."citizenId"
       GROUP BY s.id, r.latest_registration_end, c.id, cz.id
-      ORDER BY r.latest_registration_end DESC NULLS LAST
+      ORDER BY r.latest_registration_end ${order} NULLS LAST
       LIMIT ${perPage} OFFSET ${offset};
     `;
 
