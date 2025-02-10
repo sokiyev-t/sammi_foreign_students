@@ -79,37 +79,6 @@ export class StudentController {
     return await this.studentService.findAll(params);
   }
 
-
-  @Get('/find-all-by-visa-end')
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
-  async findAllByVisaEnd(
-    @Query('page') page?: string,
-    @Query('perPage') perPage?: string,
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
-  ) {
-    const pageNumber = page ? parseInt(page, 10) : 1;
-    const perPageNumber = perPage ? parseInt(perPage, 10) : 10;
-    const order = sortOrder ? sortOrder.toUpperCase() : 'DESC';
-
-    return await this.studentService.findAllByVisaEnd(pageNumber, perPageNumber, order);
-  }
-
-  @Get('/find-all-by-registration-end')
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
-  async findAllByRegistrationEnd(
-    @Query('page') page?: string,
-    @Query('perPage') perPage?: string,
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
-  ) {
-    const pageNumber = page ? parseInt(page, 10) : 1;
-    const perPageNumber = perPage ? parseInt(perPage, 10) : 10;
-    const order = sortOrder ? sortOrder.toUpperCase() : 'DESC';
-
-    return await this.studentService.findAllByRegistrationEnd(pageNumber, perPageNumber, order);
-  }
-
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)

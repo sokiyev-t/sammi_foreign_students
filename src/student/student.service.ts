@@ -62,8 +62,8 @@ export class StudentService {
   async findAll(params: StudentQueryParamsDto) {
     const {
       search,
-      page,
-      perPage,
+      page = 1,
+      perPage = 10,
       visaStart,
       visaEnd,
       registrationStart,
@@ -71,156 +71,24 @@ export class StudentService {
       createdDate,
       byId,
       byCreatedDate,
+      byVisaEnd,
+      byRegistrationEnd,
     } = params;
 
-    const where: Prisma.StudentWhereInput = {
-      ...(search && {
-        OR: [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
-          { middleName: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
-      ...(visaStart &&
-        visaEnd && {
-        visas: {
-          some: {
-            visaStart: {
-              gte: new Date(visaStart),
-            },
-            visaEnd: {
-              lte: new Date(visaEnd),
-            },
-          },
-        },
-      }),
-      ...(registrationStart &&
-        registrationEnd && {
-        registrations: {
-          some: {
-            registrationStart: {
-              gte: new Date(registrationStart),
-            },
-            registrationEnd: {
-              lte: new Date(registrationEnd),
-            },
-          },
-        },
-      }),
-      ...(createdDate && {
-        createdAt: {
-          gte: new Date(createdDate.setHours(0, 0, 0, 0)),
-          lt: new Date(createdDate.setHours(23, 59, 59, 999)),
-        },
-      }),
-    };
-
-    const orderBy: Prisma.StudentOrderByWithRelationInput = {
-      ...(byId && { id: byId }),
-      ...(byCreatedDate && { createdAt: byCreatedDate }),
-    };
-
-    const include: Prisma.StudentInclude = {
-      visas: {
-        include: {
-          visaType: true,
-        },
-      },
-      registrations: true,
-      consultant: true,
-      citizen: true,
-    };
-
-    return await paginate(
-      this.prisma.student,
-      { where, orderBy, include },
-      { page, perPage },
-    );
-  }
-
-  async findAllByVisaEnd(page: number = 1, perPage: number = 10, order: string = 'desc') {
     const offset = (page - 1) * perPage;
-    const sortOrder = order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
+    // Определяем порядок сортировки
+    let orderByClause = 's."createdAt" DESC'; // Сортировка по умолчанию
+    if (byId) orderByClause = `s.id ${byId}`;
+    if (byCreatedDate) orderByClause = `s."createdAt" ${byCreatedDate}`;
+    if (byVisaEnd) orderByClause = `v.latest_visa_end ${byVisaEnd} NULLS LAST`;
+    if (byRegistrationEnd) orderByClause = `r.latest_registration_end ${byRegistrationEnd} NULLS LAST`;
+
+    // Формируем динамический SQL-запрос
     const query = `
       SELECT 
         s.*, 
         v.latest_visa_end,
-        jsonb_agg(DISTINCT jsonb_build_object(
-          'id', vs.id,
-          'visaSeries', vs."visaSeries",
-          'visaNumber', vs."visaNumber",
-          'visaStart', vs."visaStart",
-          'visaEnd', vs."visaEnd",
-          'visaType', jsonb_build_object(
-            'id', vt.id,
-            'name', vt.name
-          )
-        )) AS visas,
-        jsonb_agg(DISTINCT jsonb_build_object(
-          'id', r.id,
-          'registrationSeries', r."registrationSeries",
-          'registrationNumber', r."registrationNumber",
-          'registrationAddress', r."registrationAddress",
-          'registrationStart', r."registrationStart",
-          'registrationEnd', r."registrationEnd"
-        )) AS registrations,
-        jsonb_build_object(
-          'id', c.id,
-          'name', c.name,
-          'phoneNumber', c."phoneNumber"
-        ) AS consultant,
-        jsonb_build_object(
-          'id', cz.id,
-          'name', cz.name
-        ) AS citizen
-      FROM "Student" s
-      LEFT JOIN (
-        SELECT "studentsId", MAX("visaEnd") AS latest_visa_end
-        FROM "Visa"
-        GROUP BY "studentsId"
-      ) v ON s.id = v."studentsId"
-      LEFT JOIN "Visa" vs ON vs."studentsId" = s.id
-      LEFT JOIN "VisaType" vt ON vt.id = vs."visaTypeId"
-      LEFT JOIN "Registration" r ON r."studentsId" = s.id
-      LEFT JOIN "Consultant" c ON c.id = s."consultantId"
-      LEFT JOIN "Citizen" cz ON cz.id = s."citizenId"
-      GROUP BY s.id, v.latest_visa_end, c.id, cz.id
-      ORDER BY v.latest_visa_end ${sortOrder} NULLS LAST
-      LIMIT ${perPage} OFFSET ${offset};
-    `;
-
-    const students = await this.prisma.$queryRawUnsafe<any[]>(query);
-
-    // Get total count of students
-    const totalStudents = await this.prisma.$queryRaw<{ count: bigint }[]>`
-      SELECT COUNT(*)::bigint AS count FROM "Student";
-    `;
-
-    // Convert BigInt to Number explicitly
-    const total = Number(totalStudents[0]?.count || 0);
-    const lastPage = Math.ceil(total / perPage);
-
-    return {
-      data: students,
-      meta: {
-        total,
-        lastPage,
-        currentPage: page,
-        perPage,
-        prev: page > 1 ? page - 1 : null,
-        next: page < lastPage ? page + 1 : null,
-      },
-    };
-  }
-
-  async findAllByRegistrationEnd(page: number = 1, perPage: number = 10, order: string = 'DESC') {
-    const offset = (page - 1) * perPage;
-    const sortOrder = order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
-
-    const query = `
-      SELECT 
-        s.*, 
         r.latest_registration_end,
         jsonb_agg(DISTINCT jsonb_build_object(
           'id', vs.id,
@@ -252,6 +120,11 @@ export class StudentService {
         ) AS citizen
       FROM "Student" s
       LEFT JOIN (
+        SELECT "studentsId", MAX("visaEnd") AS latest_visa_end
+        FROM "Visa"
+        GROUP BY "studentsId"
+      ) v ON s.id = v."studentsId"
+      LEFT JOIN (
         SELECT "studentsId", MAX("registrationEnd") AS latest_registration_end
         FROM "Registration"
         GROUP BY "studentsId"
@@ -261,19 +134,38 @@ export class StudentService {
       LEFT JOIN "Registration" rg ON rg."studentsId" = s.id
       LEFT JOIN "Consultant" c ON c.id = s."consultantId"
       LEFT JOIN "Citizen" cz ON cz.id = s."citizenId"
-      GROUP BY s.id, r.latest_registration_end, c.id, cz.id
-      ORDER BY r.latest_registration_end ${sortOrder} NULLS LAST
+      WHERE 
+        (${search ? `
+          "s"."firstName" ILIKE '%${search}%' OR
+          "s"."lastName" ILIKE '%${search}%' OR
+          "s"."middleName" ILIKE '%${search}%' OR
+          "s"."phoneNumber" ILIKE '%${search}%'
+        ` : 'TRUE'})
+        AND (${visaStart && visaEnd ? `
+          "vs"."visaStart" >= '${visaStart}' AND 
+          "vs"."visaEnd" <= '${visaEnd}'
+        ` : 'TRUE'})
+        AND (${registrationStart && registrationEnd ? `
+          "rg"."registrationStart" >= '${registrationStart}' AND 
+          "rg"."registrationEnd" <= '${registrationEnd}'
+        ` : 'TRUE'})
+        AND (${createdDate ? `
+          "s"."createdAt" >= '${createdDate} 00:00:00' AND 
+          "s"."createdAt" <= '${createdDate} 23:59:59'
+        ` : 'TRUE'})
+      GROUP BY s.id, v.latest_visa_end, r.latest_registration_end, c.id, cz.id
+      ORDER BY ${orderByClause}
       LIMIT ${perPage} OFFSET ${offset};
     `;
 
     const students = await this.prisma.$queryRawUnsafe<any[]>(query);
 
-    // Get total count of students
+    // Получаем общее количество студентов
     const totalStudents = await this.prisma.$queryRaw<{ count: bigint }[]>`
       SELECT COUNT(*)::bigint AS count FROM "Student";
     `;
 
-    // Convert BigInt to Number explicitly
+    // Конвертируем BigInt → Number
     const total = Number(totalStudents[0]?.count || 0);
     const lastPage = Math.ceil(total / perPage);
 
@@ -289,7 +181,6 @@ export class StudentService {
       },
     };
   }
-
 
   async findOne(id: string): Promise<Student | null> {
     return await this.prisma.student.findUnique({
