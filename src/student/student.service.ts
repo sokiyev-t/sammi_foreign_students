@@ -59,6 +59,7 @@ export class StudentService {
     });
   }
 
+
   async findAll(params: StudentQueryParamsDto) {
     const {
       search,
@@ -77,14 +78,25 @@ export class StudentService {
 
     const offset = (page - 1) * perPage;
 
-    // Определяем порядок сортировки
-    let orderByClause = 's."createdAt" DESC'; // Сортировка по умолчанию
+    // ✅ Convert Date objects to PostgreSQL-friendly format
+    const formatDate = (date: Date | undefined): string | null => {
+      return date ? `'${date.toISOString().replace('T', ' ').split('.')[0]}'` : null;
+    };
+
+    const visaStartFilter = formatDate(visaStart);
+    const visaEndFilter = formatDate(visaEnd);
+    const registrationStartFilter = formatDate(registrationStart);
+    const registrationEndFilter = formatDate(registrationEnd);
+    const createdDateFilter = formatDate(createdDate);
+
+    // Default ordering
+    let orderByClause = 's."createdAt" DESC';
     if (byId) orderByClause = `s.id ${byId}`;
     if (byCreatedDate) orderByClause = `s."createdAt" ${byCreatedDate}`;
     if (byVisaEnd) orderByClause = `v.latest_visa_end ${byVisaEnd} NULLS LAST`;
     if (byRegistrationEnd) orderByClause = `r.latest_registration_end ${byRegistrationEnd} NULLS LAST`;
 
-    // Формируем динамический SQL-запрос
+    // ✅ Build raw SQL query
     const query = `
       SELECT 
         s.*, 
@@ -141,31 +153,32 @@ export class StudentService {
           "s"."middleName" ILIKE '%${search}%' OR
           "s"."phoneNumber" ILIKE '%${search}%'
         ` : 'TRUE'})
-        AND (${visaStart && visaEnd ? `
-          "vs"."visaStart" >= '${visaStart}' AND 
-          "vs"."visaEnd" <= '${visaEnd}'
+        AND (${visaStartFilter && visaEndFilter ? `
+          "vs"."visaStart" >= ${visaStartFilter} AND 
+          "vs"."visaEnd" <= ${visaEndFilter}
         ` : 'TRUE'})
-        AND (${registrationStart && registrationEnd ? `
-          "rg"."registrationStart" >= '${registrationStart}' AND 
-          "rg"."registrationEnd" <= '${registrationEnd}'
+        AND (${registrationStartFilter && registrationEndFilter ? `
+          "rg"."registrationStart" >= ${registrationStartFilter} AND 
+          "rg"."registrationEnd" <= ${registrationEndFilter}
         ` : 'TRUE'})
-        AND (${createdDate ? `
-          "s"."createdAt" >= '${createdDate} 00:00:00' AND 
-          "s"."createdAt" <= '${createdDate} 23:59:59'
+        AND (${createdDateFilter ? `
+          "s"."createdAt" >= ${createdDateFilter} AND 
+          "s"."createdAt" <= ${createdDateFilter.replace('00:00:00', '23:59:59')}
         ` : 'TRUE'})
       GROUP BY s.id, v.latest_visa_end, r.latest_registration_end, c.id, cz.id
       ORDER BY ${orderByClause}
       LIMIT ${perPage} OFFSET ${offset};
     `;
 
+    // ✅ Run the raw SQL query
     const students = await this.prisma.$queryRawUnsafe<any[]>(query);
 
-    // Получаем общее количество студентов
+    // ✅ Get total count of students
     const totalStudents = await this.prisma.$queryRaw<{ count: bigint }[]>`
       SELECT COUNT(*)::bigint AS count FROM "Student";
     `;
 
-    // Конвертируем BigInt → Number
+    // ✅ Convert BigInt → Number
     const total = Number(totalStudents[0]?.count || 0);
     const lastPage = Math.ceil(total / perPage);
 
@@ -181,6 +194,7 @@ export class StudentService {
       },
     };
   }
+
 
   async findOne(id: string): Promise<Student | null> {
     return await this.prisma.student.findUnique({
