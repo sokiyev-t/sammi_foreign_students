@@ -60,6 +60,7 @@ export class StudentService {
   }
 
 
+
   async findAll(params: StudentQueryParamsDto) {
     const {
       search,
@@ -78,7 +79,7 @@ export class StudentService {
 
     const offset = (page - 1) * perPage;
 
-    // ✅ Convert Date objects to PostgreSQL-friendly format
+    // ✅ Функция форматирования дат в строку для SQL
     const formatDate = (date: Date | undefined): string | null => {
       return date ? `'${date.toISOString().replace('T', ' ').split('.')[0]}'` : null;
     };
@@ -89,14 +90,14 @@ export class StudentService {
     const registrationEndFilter = formatDate(registrationEnd);
     const createdDateFilter = formatDate(createdDate);
 
-    // Default ordering
+    // ✅ Определение сортировки
     let orderByClause = 's."createdAt" DESC';
     if (byId) orderByClause = `s.id ${byId}`;
     if (byCreatedDate) orderByClause = `s."createdAt" ${byCreatedDate}`;
     if (byVisaEnd) orderByClause = `v.latest_visa_end ${byVisaEnd} NULLS LAST`;
     if (byRegistrationEnd) orderByClause = `r.latest_registration_end ${byRegistrationEnd} NULLS LAST`;
 
-    // ✅ Build raw SQL query
+    // ✅ SQL-запрос с `COUNT(*) OVER()`
     const query = `
       SELECT 
         s.*, 
@@ -129,7 +130,8 @@ export class StudentService {
         jsonb_build_object(
           'id', cz.id,
           'name', cz.name
-        ) AS citizen
+        ) AS citizen,
+        CAST(COUNT(*) OVER() AS BIGINT) AS total_count
       FROM "Student" s
       LEFT JOIN (
         SELECT "studentsId", MAX("visaEnd") AS latest_visa_end
@@ -170,16 +172,17 @@ export class StudentService {
       LIMIT ${perPage} OFFSET ${offset};
     `;
 
-    // ✅ Run the raw SQL query
     const students = await this.prisma.$queryRawUnsafe<any[]>(query);
 
-    // ✅ Get total count of students
-    const totalStudents = await this.prisma.$queryRaw<{ count: bigint }[]>`
-      SELECT COUNT(*)::bigint AS count FROM "Student";
-    `;
+    if (students.length > 0) {
+      students.forEach((student) => {
+        if (typeof student.total_count === "bigint") {
+          student.total_count = Number(student.total_count);
+        }
+      });
+    }
 
-    // ✅ Convert BigInt → Number
-    const total = Number(totalStudents[0]?.count || 0);
+    const total = students.length > 0 ? students[0].total_count : 0;
     const lastPage = Math.ceil(total / perPage);
 
     return {
@@ -194,7 +197,6 @@ export class StudentService {
       },
     };
   }
-
 
   async findOne(id: string): Promise<Student | null> {
     return await this.prisma.student.findUnique({
