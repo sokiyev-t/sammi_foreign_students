@@ -1,9 +1,23 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
-import { IsDate, IsEnum, IsOptional } from "class-validator";
-import { BaseQueryParamsDto, SortOrder } from "src/common/dto/query-params.dto";
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsDate, IsEnum, IsOptional } from 'class-validator';
+import { BaseQueryParamsDto, SortOrder } from 'src/common/dto/query-params.dto';
+
+export enum IsActive {
+  TRUE = 'true',
+  FALSE = 'false',
+}
 
 export class StudentQueryParamsDto extends BaseQueryParamsDto {
+  @IsEnum(IsActive)
+  @IsOptional()
+  @ApiProperty({
+    description: 'Filter is active',
+    example: 'true',
+    required: false,
+  })
+  isActive?: IsActive;
+
   @IsDate()
   @Type(() => Date)
   @IsOptional()

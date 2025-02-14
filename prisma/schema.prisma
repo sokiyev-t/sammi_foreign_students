@@ -44,16 +44,16 @@ model VisaType {
 model Consultant {
   id          String    @id @default(uuid())
   name        String    @unique @db.VarChar(65)
-  phoneNumber String?   @db.VarChar(65) 
+  phoneNumber String?   @db.VarChar(65)
   Student     Student[]
 }
 
 model Visa {
   id         String    @id @default(uuid())
   visaSeries String?   @db.VarChar(65)
-  visaNumber String?   @db.VarChar(65) 
-  visaStart  DateTime? 
-  visaEnd    DateTime? 
+  visaNumber String?   @db.VarChar(65)
+  visaStart  DateTime?
+  visaEnd    DateTime?
   visaType   VisaType  @relation(fields: [visaTypeId], references: [id])
   visaTypeId String
   student    Student   @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -66,7 +66,7 @@ model Registration {
   registrationNumber  String?   @db.VarChar(45)
   registrationAddress String?   @db.VarChar(200)
   registrationStart   DateTime?
-  registrationEnd     DateTime? 
+  registrationEnd     DateTime?
   student             Student   @relation(fields: [studentsId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   studentsId          String
 }
@@ -82,7 +82,7 @@ model Student {
 
   passportSeries  String?        @db.VarChar(40)
   passportNumber  String?        @db.VarChar(40)
-  passportExpired DateTime? 
+  passportExpired DateTime?
   pinfl           String?        @db.VarChar(40)
   visas           Visa[]
   registrations   Registration[]
@@ -92,6 +92,8 @@ model Student {
 
   citizen   Citizen @relation(fields: [citizenId], references: [id])
   citizenId String
+
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
 }

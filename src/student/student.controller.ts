@@ -26,7 +26,7 @@ import { UpdateExtraStudentDto } from './dto/update-extra-student.dto';
 @Controller('student')
 @UseGuards(JwtAuthGuard)
 export class StudentController {
-  constructor(private readonly studentService: StudentService) { }
+  constructor(private readonly studentService: StudentService) {}
 
   @Post('/create-many')
   @Roles(Role.ADMIN, Role.EDITOR)
@@ -61,9 +61,7 @@ export class StudentController {
   @Post('/create-ex-student')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.EDITOR)
-  async createExStudent(
-    @Body() data: CreateExtraStudentDto,
-  ): Promise<Student> {
+  async createExStudent(@Body() data: CreateExtraStudentDto): Promise<Student> {
     return await this.studentService.createExtraStudent(data);
   }
 
@@ -77,6 +75,20 @@ export class StudentController {
   @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
   async findAll(@Query() params: StudentQueryParamsDto) {
     return await this.studentService.findAll(params);
+  }
+
+  @Get('/find-visa-expired')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
+  async findVisaExpired() {
+    return await this.studentService.findVisaExpired();
+  }
+
+  @Get('/find-registration-expired')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.EDITOR, Role.VIEWER)
+  async findRegistrationExpired() {
+    return await this.studentService.findRegistrationExpired();
   }
 
   @Get(':id')

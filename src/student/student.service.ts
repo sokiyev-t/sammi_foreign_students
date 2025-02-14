@@ -12,7 +12,7 @@ const paginate: PaginateFunction = paginator({ perPage: 10 });
 
 @Injectable()
 export class StudentService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   // Create a new consultant record
   async createExtraStudents(data: CreateExtraStudentDto[]) {
@@ -59,13 +59,12 @@ export class StudentService {
     });
   }
 
-
-
   async findAll(params: StudentQueryParamsDto) {
     const {
       search,
       page = 1,
       perPage = 10,
+      isActive,
       visaStart,
       visaEnd,
       registrationStart,
@@ -81,7 +80,9 @@ export class StudentService {
 
     // ✅ Функция форматирования дат в строку для SQL
     const formatDate = (date: Date | undefined): string | null => {
-      return date ? `'${date.toISOString().replace('T', ' ').split('.')[0]}'` : null;
+      return date
+        ? `'${date.toISOString().replace('T', ' ').split('.')[0]}'`
+        : null;
     };
 
     const visaStartFilter = formatDate(visaStart);
@@ -95,9 +96,9 @@ export class StudentService {
     if (byId) orderByClause = `s.id ${byId}`;
     if (byCreatedDate) orderByClause = `s."createdAt" ${byCreatedDate}`;
     if (byVisaEnd) orderByClause = `v.latest_visa_end ${byVisaEnd} NULLS LAST`;
-    if (byRegistrationEnd) orderByClause = `r.latest_registration_end ${byRegistrationEnd} NULLS LAST`;
+    if (byRegistrationEnd)
+      orderByClause = `r.latest_registration_end ${byRegistrationEnd} NULLS LAST`;
 
-    // ✅ SQL-запрос с `COUNT(*) OVER()`
     const query = `
       SELECT 
         s.*, 
@@ -149,24 +150,41 @@ export class StudentService {
       LEFT JOIN "Consultant" c ON c.id = s."consultantId"
       LEFT JOIN "Citizen" cz ON cz.id = s."citizenId"
       WHERE 
-        (${search ? `
+        (${
+          search
+            ? `
           "s"."firstName" ILIKE '%${search}%' OR
           "s"."lastName" ILIKE '%${search}%' OR
           "s"."middleName" ILIKE '%${search}%' OR
           "s"."phoneNumber" ILIKE '%${search}%'
-        ` : 'TRUE'})
-        AND (${visaStartFilter && visaEndFilter ? `
+        `
+            : 'TRUE'
+        })
+        AND (${isActive ? `"s"."isActive" = ${isActive}` : 'TRUE'})
+        AND (${
+          visaStartFilter && visaEndFilter
+            ? `
           "vs"."visaStart" >= ${visaStartFilter} AND 
           "vs"."visaEnd" <= ${visaEndFilter}
-        ` : 'TRUE'})
-        AND (${registrationStartFilter && registrationEndFilter ? `
+        `
+            : 'TRUE'
+        })
+        AND (${
+          registrationStartFilter && registrationEndFilter
+            ? `
           "rg"."registrationStart" >= ${registrationStartFilter} AND 
           "rg"."registrationEnd" <= ${registrationEndFilter}
-        ` : 'TRUE'})
-        AND (${createdDateFilter ? `
+        `
+            : 'TRUE'
+        })
+        AND (${
+          createdDateFilter
+            ? `
           "s"."createdAt" >= ${createdDateFilter} AND 
           "s"."createdAt" <= ${createdDateFilter.replace('00:00:00', '23:59:59')}
-        ` : 'TRUE'})
+        `
+            : 'TRUE'
+        })
       GROUP BY s.id, v.latest_visa_end, r.latest_registration_end, c.id, cz.id
       ORDER BY ${orderByClause}
       LIMIT ${perPage} OFFSET ${offset};
@@ -176,7 +194,7 @@ export class StudentService {
 
     if (students.length > 0) {
       students.forEach((student) => {
-        if (typeof student.total_count === "bigint") {
+        if (typeof student.total_count === 'bigint') {
           student.total_count = Number(student.total_count);
         }
       });
@@ -194,6 +212,160 @@ export class StudentService {
         perPage,
         prev: page > 1 ? page - 1 : null,
         next: page < lastPage ? page + 1 : null,
+      },
+    };
+  }
+
+  async findVisaExpired() {
+    const settings = await this.prisma.settings.findFirst();
+
+    const query = `
+      SELECT 
+        s.*, 
+        v.latest_visa_end,
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'id', vs.id,
+          'visaSeries', vs."visaSeries",
+          'visaNumber', vs."visaNumber",
+          'visaStart', vs."visaStart",
+          'visaEnd', vs."visaEnd",
+          'visaType', jsonb_build_object(
+            'id', vt.id,
+            'name', vt.name
+          )
+        )) AS visas,
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'id', rg.id,
+          'registrationSeries', rg."registrationSeries",
+          'registrationNumber', rg."registrationNumber",
+          'registrationAddress', rg."registrationAddress",
+          'registrationStart', rg."registrationStart",
+          'registrationEnd', rg."registrationEnd"
+        )) AS registrations,
+        jsonb_build_object(
+          'id', c.id,
+          'name', c.name,
+          'phoneNumber', c."phoneNumber"
+        ) AS consultant,
+        jsonb_build_object(
+          'id', cz.id,
+          'name', cz.name
+        ) AS citizen,
+        CAST(COUNT(*) OVER() AS BIGINT) AS total_count
+      FROM "Student" s
+      LEFT JOIN (
+        SELECT "studentsId", MAX("visaEnd") AS latest_visa_end
+        FROM "Visa"
+        GROUP BY "studentsId"
+      ) v ON s.id = v."studentsId"
+      LEFT JOIN (
+        SELECT "studentsId", MAX("registrationEnd") AS latest_registration_end
+        FROM "Registration"
+        GROUP BY "studentsId"
+      ) r ON s.id = r."studentsId"
+      LEFT JOIN "Visa" vs ON vs."studentsId" = s.id
+      LEFT JOIN "VisaType" vt ON vt.id = vs."visaTypeId"
+      LEFT JOIN "Registration" rg ON rg."studentsId" = s.id
+      LEFT JOIN "Consultant" c ON c.id = s."consultantId"
+      LEFT JOIN "Citizen" cz ON cz.id = s."citizenId"
+      WHERE v.latest_visa_end + INTERVAL '${settings ? settings.visaTime : 3} days' <= NOW() AND s."isActive"
+      GROUP BY s.id, v.latest_visa_end, r.latest_registration_end, c.id, cz.id
+      ORDER BY v.latest_visa_end ASC;
+    `;
+
+    const students = await this.prisma.$queryRawUnsafe<any[]>(query);
+
+    if (students.length > 0) {
+      students.forEach((student) => {
+        if (typeof student.total_count === 'bigint') {
+          student.total_count = Number(student.total_count);
+        }
+      });
+    }
+
+    const total = students.length > 0 ? students[0].total_count : 0;
+
+    return {
+      data: students,
+      meta: {
+        total,
+      },
+    };
+  }
+
+  async findRegistrationExpired() {
+    const settings = await this.prisma.settings.findFirst();
+
+    const query = `
+      SELECT 
+        s.*, 
+        v.latest_visa_end,
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'id', vs.id,
+          'visaSeries', vs."visaSeries",
+          'visaNumber', vs."visaNumber",
+          'visaStart', vs."visaStart",
+          'visaEnd', vs."visaEnd",
+          'visaType', jsonb_build_object(
+            'id', vt.id,
+            'name', vt.name
+          )
+        )) AS visas,
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'id', rg.id,
+          'registrationSeries', rg."registrationSeries",
+          'registrationNumber', rg."registrationNumber",
+          'registrationAddress', rg."registrationAddress",
+          'registrationStart', rg."registrationStart",
+          'registrationEnd', rg."registrationEnd"
+        )) AS registrations,
+        jsonb_build_object(
+          'id', c.id,
+          'name', c.name,
+          'phoneNumber', c."phoneNumber"
+        ) AS consultant,
+        jsonb_build_object(
+          'id', cz.id,
+          'name', cz.name
+        ) AS citizen,
+        CAST(COUNT(*) OVER() AS BIGINT) AS total_count
+      FROM "Student" s
+      LEFT JOIN (
+        SELECT "studentsId", MAX("visaEnd") AS latest_visa_end
+        FROM "Visa"
+        GROUP BY "studentsId"
+      ) v ON s.id = v."studentsId"
+      LEFT JOIN (
+        SELECT "studentsId", MAX("registrationEnd") AS latest_registration_end
+        FROM "Registration"
+        GROUP BY "studentsId"
+      ) r ON s.id = r."studentsId"
+      LEFT JOIN "Visa" vs ON vs."studentsId" = s.id
+      LEFT JOIN "VisaType" vt ON vt.id = vs."visaTypeId"
+      LEFT JOIN "Registration" rg ON rg."studentsId" = s.id
+      LEFT JOIN "Consultant" c ON c.id = s."consultantId"
+      LEFT JOIN "Citizen" cz ON cz.id = s."citizenId"
+      WHERE r.latest_registration_end + INTERVAL '${settings ? settings.registrationTime : 3} days' <= NOW() AND s."isActive"
+      GROUP BY s.id, v.latest_visa_end, r.latest_registration_end, c.id, cz.id
+      ORDER BY r.latest_registration_end ASC;
+    `;
+
+    const students = await this.prisma.$queryRawUnsafe<any[]>(query);
+
+    if (students.length > 0) {
+      students.forEach((student) => {
+        if (typeof student.total_count === 'bigint') {
+          student.total_count = Number(student.total_count);
+        }
+      });
+    }
+
+    const total = students.length > 0 ? students[0].total_count : 0;
+
+    return {
+      data: students,
+      meta: {
+        total,
       },
     };
   }

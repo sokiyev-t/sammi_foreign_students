@@ -1,12 +1,12 @@
 import { $Enums, PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-const fs = require("fs");
+const fs = require('fs');
 
 const prisma = new PrismaClient();
 
 async function main() {
   // Чтение данных из файла data.json
-  const filePath = '/home/doston_user/sammi_foreign_students/prisma/data.json';
+  const filePath = '/home/doossee/sammi_foreign_students/prisma/data.json';
   const rawData = fs.readFileSync(filePath, 'utf-8');
   const studentsData = JSON.parse(rawData);
 
@@ -26,74 +26,76 @@ async function main() {
   const citizens = await prisma.citizen.createManyAndReturn({
     data: [
       {
-        "name": "India"
+        name: 'India',
       },
       {
-        "name": "Bangladesh"
+        name: 'Bangladesh',
       },
       {
-        "name": "Nepal"
+        name: 'Nepal',
       },
       {
-        "name": "Turkey"
+        name: 'Turkey',
       },
       {
-        "name": "Fillipin"
+        name: 'Fillipin',
       },
       {
-        "name": "Pakistan"
+        name: 'Pakistan',
       },
       {
-        "name": "Korea"
-      }
-    ]
+        name: 'Korea',
+      },
+    ],
   });
 
   const consultants = await prisma.consultant.createManyAndReturn({
     data: [
       {
-        "name": "AXIS"
+        name: 'AXIS',
       },
       {
-        "name": "Grand Alsion"
+        name: 'Grand Alsion',
       },
       {
-        "name": "MDHouse"
+        name: 'MDHouse',
       },
       {
-        "name": "Mughal"
+        name: 'Mughal',
       },
       {
-        "name": "Usmanov Samad"
+        name: 'Usmanov Samad',
       },
       {
-        "name": "Cosmos Moxsin"
+        name: 'Cosmos Moxsin',
       },
       {
-        "name": "Arsal"
+        name: 'Arsal',
       },
       {
-        "name": "Directly SamSMU"
-      }
-    ]
+        name: 'Directly SamSMU',
+      },
+    ],
   });
 
   const visaTypes = await prisma.visaType.createManyAndReturn({
     data: [
       {
-        "name": "tourist_visa"
+        name: 'tourist_visa',
       },
       {
-        "name": "student_visa"
+        name: 'student_visa',
       },
       {
-        "name": "business_visa"
-      }
-    ]
-  })
+        name: 'business_visa',
+      },
+    ],
+  });
 
   const visaTypeMap = Object.fromEntries(visaTypes.map((v) => [v.name, v.id]));
-  const consultantMap = Object.fromEntries(consultants.map((c) => [c.name, c.id]));
+  const consultantMap = Object.fromEntries(
+    consultants.map((c) => [c.name, c.id]),
+  );
   const citizenMap = Object.fromEntries(citizens.map((ci) => [ci.name, ci.id]));
 
   // Step 4: Create Student records
@@ -143,15 +145,14 @@ async function main() {
     }
   }
 
-  console.log("Seeding completed.");
+  console.log('Seeding completed.');
 }
 
 main()
-  .catch(e => {
+  .catch((e) => {
     console.error(e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
   });
-
