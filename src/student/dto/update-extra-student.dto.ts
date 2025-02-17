@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsDate, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { CreateRegistrationConnectDto } from 'src/registration/dto/create-registration.dto';
 import { CreateVisaConnectDto } from 'src/visa/dto/create-visa.dto';
 
@@ -73,4 +80,9 @@ export class UpdateExtraStudentDto {
   @ValidateNested({ each: true })
   @Type(() => CreateRegistrationConnectDto)
   registrations?: CreateRegistrationConnectDto[];
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsBoolean()
+  isActive?: boolean;
 }
