@@ -156,7 +156,9 @@ export class StudentService {
           "s"."firstName" ILIKE '%${search}%' OR
           "s"."lastName" ILIKE '%${search}%' OR
           "s"."middleName" ILIKE '%${search}%' OR
-          "s"."phoneNumber" ILIKE '%${search}%'
+          "s"."phoneNumber" ILIKE '%${search}%' OR
+          "s"."passportSeries" ILIKE '%${search}%' OR
+          "s"."passportNumber" ILIKE '%${search}%'
         `
             : 'TRUE'
         })
